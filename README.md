@@ -35,10 +35,7 @@ Apache Drill Format Plugin for reading Excel files
       "defaultInputFormat": null
     }
   },
-  "formats": {
-    
-    ...,
-    
+  "formats": {    
     "excel": {
       "type": "excel",
       "extensions": [
