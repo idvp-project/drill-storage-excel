@@ -98,6 +98,9 @@ public class CellRangeReader implements Iterator<Map<Integer, Object>> {
             case BOOLEAN:
                 return cell.getBooleanCellValue();
             case NUMERIC:
+                if (DateUtil.isCellDateFormatted(cell)) {
+                    return cell.getDateCellValue();
+                }
                 return cell.getNumericCellValue();
             case FORMULA:
                 return getCellValue(evaluator.evaluate(cell));

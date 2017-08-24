@@ -6,9 +6,9 @@
  * to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
- *
+ * <p>
  * http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -18,11 +18,14 @@
 package org.apache.drill.exec.store.excel.read;
 
 import io.netty.buffer.DrillBuf;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.drill.common.exceptions.ExecutionSetupException;
 import org.apache.drill.common.exceptions.UserException;
 import org.apache.drill.common.expression.SchemaPath;
+import org.apache.drill.exec.expr.holders.DateHolder;
 import org.apache.drill.exec.expr.holders.Decimal18Holder;
+import org.apache.drill.exec.expr.holders.TimeStampHolder;
 import org.apache.drill.exec.ops.FragmentContext;
 import org.apache.drill.exec.ops.OperatorContext;
 import org.apache.drill.exec.physical.impl.OutputMutator;
@@ -90,17 +93,17 @@ public class ExcelRecordReader extends AbstractRecordReader {
 
             setColumns(this.requestedColumns);
 
-            if(!isStarQuery()) {
+            if (!isStarQuery()) {
                 Set<Integer> columnFilter = new HashSet<>();
                 for (SchemaPath path : requestedColumns) {
                     String col = path.getRootSegment().getPath();
                     Integer key = headers.entrySet().stream().filter(c -> col.equals(c.getValue())).map(Map.Entry::getKey).findFirst().orElse(null);
-                    if(key != null) {
+                    if (key != null) {
                         columnFilter.add(key);
                     } else {
-                        if(col.startsWith(DEFAULT_COLUMN_NAME)) {
+                        if (col.startsWith(DEFAULT_COLUMN_NAME)) {
                             String colNumStr = col.replace(DEFAULT_COLUMN_NAME, "");
-                            if(NumberUtils.isDigits(colNumStr)) {
+                            if (NumberUtils.isDigits(colNumStr)) {
                                 columnFilter.add(Integer.valueOf(colNumStr));
                             } else {
                                 throw new RuntimeException(String.format("Illegal column requested: '%s'", col));
@@ -123,22 +126,25 @@ public class ExcelRecordReader extends AbstractRecordReader {
     private Map<Integer, String> extractHeaders(Map<Integer, Object> row) {
         Map<Integer, String> result = new HashMap<>();
         for (Map.Entry<Integer, Object> entry : row.entrySet()) {
-            if(entry.getValue() != null) {
-                result.put(entry.getKey(), createColumnName(entry.getValue().toString(), entry.getKey()));
-            }
+            result.put(entry.getKey(), createColumnName(Objects.toString(entry.getValue(), null), entry.getKey()));
         }
 
         return result;
     }
 
     private Map<String, Integer> columnNameCounters = new HashMap<>();
+
     private String createColumnName(String name, Integer colNum) {
-        if(!columnNameCounters.containsKey(name)) {
+        if (StringUtils.isWhitespace(name)) {
+            name = DEFAULT_COLUMN_NAME;
+        }
+
+        if (!columnNameCounters.containsKey(name)) {
             columnNameCounters.put(name, 0);
         }
         Integer nameCounter = columnNameCounters.get(name);
         String result;
-        if(DEFAULT_COLUMN_NAME.equals(name))
+        if (DEFAULT_COLUMN_NAME.equals(name))
             result = String.format("%s%s", name, colNum);
         else
             result = String.format("%s%s", name, nameCounter.equals(0) ? "" : nameCounter);
@@ -159,12 +165,12 @@ public class ExcelRecordReader extends AbstractRecordReader {
 
             while (cellRangeReader.hasNext() && recordCount < MAX_RECORDS_PER_BATCH) {
                 Map<Integer, Object> next = cellRangeReader.next();
-                if(!next.values().stream().allMatch(Objects::isNull)) {
+                if (!next.values().stream().allMatch(Objects::isNull)) {
                     this.writer.setPosition(recordCount);
                     map.start();
 
                     for (Map.Entry<Integer, Object> entry : next.entrySet()) {
-                        if(!headers.containsKey(entry.getKey())) {
+                        if (!headers.containsKey(entry.getKey())) {
                             headers.put(entry.getKey(), createColumnName(DEFAULT_COLUMN_NAME, entry.getKey()));
                         }
                         map(map, headers.get(entry.getKey()), entry.getValue());
@@ -183,29 +189,35 @@ public class ExcelRecordReader extends AbstractRecordReader {
     }
 
     private void map(BaseWriter.MapWriter map, String key, Object value) {
-        if(value == null) {
+        if (value == null) {
             return;
         }
 
-        if(value instanceof String) {
+        if (value instanceof String) {
             byte[] bytes = String.class.cast(value).getBytes(StandardCharsets.UTF_8);
             this.buffer = buffer.reallocIfNeeded(bytes.length);
             this.buffer.setBytes(0, bytes);
             map.varChar(key).writeVarChar(0, bytes.length, buffer);
         }
 
-        if(value instanceof Boolean) {
+        if (value instanceof Boolean) {
             Boolean bit = Boolean.class.cast(value);
             map.bit(key).writeBit(bit ? 1 : 0);
         }
 
-        if(value instanceof Double) {
+        if (value instanceof Double) {
             Decimal18Holder h = new Decimal18Holder();
             BigDecimal d = new BigDecimal(Double.class.cast(value));
             h.precision = d.precision();
             h.scale = d.scale();
             h.value = DecimalUtility.getDecimal18FromBigDecimal(d, d.scale(), d.precision());
             map.decimal18(key, d.scale(), d.precision()).write(h);
+        }
+
+        if (value instanceof Date) {
+            TimeStampHolder h = new TimeStampHolder();
+            h.value = ((Date) value).getTime();
+            map.timeStamp(key).write(h);
         }
     }
 
