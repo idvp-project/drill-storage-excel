@@ -59,7 +59,6 @@ public class ExcelRecordReader extends AbstractRecordReader {
     private VectorContainerWriter writer;
     private Workbook wb;
     private FSDataInputStream fsStream;
-    private Sheet sheet;
     private CellRangeReader cellRangeReader;
 
     private Map<Integer, String> headers;
@@ -79,7 +78,7 @@ public class ExcelRecordReader extends AbstractRecordReader {
             this.fsStream = fileSystem.open(config.getLocation());
 
             this.wb = WorkbookFactory.create(fsStream);
-            this.sheet = config.getWorksheet() == null ? wb.getSheetAt(0) : wb.getSheet(config.getWorksheet());
+            final Sheet sheet = config.getWorksheet() == null ? wb.getSheetAt(0) : wb.getSheet(config.getWorksheet());
 
             CellRange cellRange = new CellRangeBuilder()
                     .withRange(this.config.getCellRange())
@@ -190,7 +189,8 @@ public class ExcelRecordReader extends AbstractRecordReader {
 
         if(value instanceof String) {
             byte[] bytes = String.class.cast(value).getBytes(StandardCharsets.UTF_8);
-            this.buffer.setBytes(0, bytes, 0, bytes.length);
+            this.buffer = buffer.reallocIfNeeded(bytes.length);
+            this.buffer.setBytes(0, bytes);
             map.varChar(key).writeVarChar(0, bytes.length, buffer);
         }
 

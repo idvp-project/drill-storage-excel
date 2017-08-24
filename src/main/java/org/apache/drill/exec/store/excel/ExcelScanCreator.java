@@ -17,7 +17,6 @@
  */
 package org.apache.drill.exec.store.excel;
 
-import com.google.common.base.Stopwatch;
 import org.apache.drill.common.exceptions.ExecutionSetupException;
 import org.apache.drill.exec.ops.FragmentContext;
 import org.apache.drill.exec.ops.OperatorContext;
@@ -59,8 +58,6 @@ public class ExcelScanCreator implements BatchCreator<ExcelSubScan> {
         DrillFileSystem dfs = operatorContext.newFileSystem(storagePlugin.getFsConf());
 
         RuntimeExcelTableConfig runtimeConfig = scan.getStoragePluginConfig().getRuntimeConfig(scan.getSpec().getTable());
-
-        Stopwatch stopwatch = Stopwatch.createStarted();
 
         RecordReader reader = new ExcelRecordReader(context, dfs, scan.getColumns(), runtimeConfig);
 
