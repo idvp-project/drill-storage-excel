@@ -110,6 +110,10 @@ public class CellRangeReader implements Iterator<Map<Integer, Object>> {
     }
 
     private Object getCellValue(CellValue cell) {
+        if (cell == null) {
+            return null;
+        }
+
         switch (cell.getCellTypeEnum()) {
             case STRING:
                 return cell.getStringValue();
