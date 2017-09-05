@@ -23,7 +23,7 @@ import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.drill.common.exceptions.ExecutionSetupException;
 import org.apache.drill.common.exceptions.UserException;
 import org.apache.drill.common.expression.SchemaPath;
-import org.apache.drill.exec.expr.holders.DateHolder;
+import org.apache.drill.exec.ExecConstants;
 import org.apache.drill.exec.expr.holders.Decimal18Holder;
 import org.apache.drill.exec.expr.holders.TimeStampHolder;
 import org.apache.drill.exec.ops.FragmentContext;
@@ -37,7 +37,9 @@ import org.apache.drill.exec.vector.complex.impl.VectorContainerWriter;
 import org.apache.drill.exec.vector.complex.writer.BaseWriter;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
-import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.usermodel.WorkbookFactory;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -57,6 +59,7 @@ public class ExcelRecordReader extends AbstractRecordReader {
     private final DrillFileSystem fileSystem;
     private final List<SchemaPath> requestedColumns;
     private final RuntimeExcelTableConfig config;
+    private final boolean unionEnabled;
 
     private DrillBuf buffer;
     private VectorContainerWriter writer;
@@ -72,11 +75,13 @@ public class ExcelRecordReader extends AbstractRecordReader {
         this.fileSystem = fileSystem;
         this.requestedColumns = columns;
         this.config = config;
+        this.unionEnabled = fragmentContext.getOptions().getOption(ExecConstants.ENABLE_UNION_TYPE);
+
     }
 
     public void setup(final OperatorContext context, final OutputMutator output) throws ExecutionSetupException {
         try {
-            this.writer = new VectorContainerWriter(output);
+            this.writer = new VectorContainerWriter(output, unionEnabled);
             this.buffer = fragmentContext.getManagedBuffer();
             this.fsStream = fileSystem.open(config.getLocation());
 
