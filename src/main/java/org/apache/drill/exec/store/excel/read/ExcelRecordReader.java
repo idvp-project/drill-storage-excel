@@ -198,6 +198,7 @@ public class ExcelRecordReader extends AbstractRecordReader {
             return;
         }
 
+
         if (value instanceof String) {
             byte[] bytes = String.class.cast(value).getBytes(StandardCharsets.UTF_8);
             this.buffer = buffer.reallocIfNeeded(bytes.length);

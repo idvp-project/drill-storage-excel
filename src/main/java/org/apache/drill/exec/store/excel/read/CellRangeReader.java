@@ -20,10 +20,7 @@ package org.apache.drill.exec.store.excel.read;
 import org.apache.commons.lang.NotImplementedException;
 import org.apache.poi.ss.usermodel.*;
 
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Created by mnasyrov on 14.08.2017.
@@ -67,7 +64,7 @@ public class CellRangeReader implements Iterator<Map<Integer, Object>> {
             throw new CellRangeReaderException("Invalid read operation");
         }
 
-        Map<Integer, Object> result = new HashMap<Integer, Object>();
+        Map<Integer, Object> result = new LinkedHashMap<>();
         Row row = sheet.getRow(index);
         index++;
 
