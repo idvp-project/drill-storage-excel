@@ -21,6 +21,8 @@ import org.apache.drill.exec.store.excel.config.ExcelFormatConfig;
 import org.apache.drill.exec.store.excel.config.ExcelTableConfig;
 import org.apache.hadoop.fs.Path;
 
+import java.util.Objects;
+
 /**
  * Created by mnasyrov on 11.08.2017.
  */
@@ -29,6 +31,7 @@ public class RuntimeExcelTableConfig {
     private final Path location;
     private final String worksheet;
     private final String cellRange;
+    private final boolean stringify;
     private final boolean floatingRangeFooter;
     private final boolean extractHeaders;
 
@@ -38,11 +41,13 @@ public class RuntimeExcelTableConfig {
         this.cellRange = tableConfig.getCellRange();
         this.floatingRangeFooter = tableConfig.isFloatingRangeFooter();
         this.extractHeaders = tableConfig.isExtractHeaders();
+        this.stringify = storagePluginConfig.stringify;
     }
 
     RuntimeExcelTableConfig(String filePath, ExcelFormatConfig formatConfig) {
         this.location = new Path(filePath);
         this.extractHeaders = formatConfig.isExtractHeaders();
+        this.stringify = formatConfig.isStringify();
         this.worksheet = null;
         this.cellRange = null;
         this.floatingRangeFooter = false;
@@ -68,28 +73,25 @@ public class RuntimeExcelTableConfig {
         return floatingRangeFooter;
     }
 
+    public boolean isStringify() {
+        return stringify;
+    }
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-
         RuntimeExcelTableConfig that = (RuntimeExcelTableConfig) o;
-
-        if (floatingRangeFooter != that.floatingRangeFooter) return false;
-        if (extractHeaders != that.extractHeaders) return false;
-        if (location != null ? !location.equals(that.location) : that.location != null) return false;
-        if (worksheet != null ? !worksheet.equals(that.worksheet) : that.worksheet != null) return false;
-        return cellRange != null ? cellRange.equals(that.cellRange) : that.cellRange == null;
+        return stringify == that.stringify &&
+                floatingRangeFooter == that.floatingRangeFooter &&
+                extractHeaders == that.extractHeaders &&
+                Objects.equals(location, that.location) &&
+                Objects.equals(worksheet, that.worksheet) &&
+                Objects.equals(cellRange, that.cellRange);
     }
 
     @Override
     public int hashCode() {
-        int result = location != null ? location.hashCode() : 0;
-        result = 31 * result + (worksheet != null ? worksheet.hashCode() : 0);
-        result = 31 * result + (cellRange != null ? cellRange.hashCode() : 0);
-        result = 31 * result + (floatingRangeFooter ? 1 : 0);
-        result = 31 * result + (extractHeaders ? 1 : 0);
-        return result;
+        return Objects.hash(location, worksheet, cellRange, stringify, floatingRangeFooter, extractHeaders);
     }
 }

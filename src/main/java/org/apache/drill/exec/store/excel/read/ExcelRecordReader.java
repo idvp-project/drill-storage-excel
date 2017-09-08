@@ -60,6 +60,7 @@ public class ExcelRecordReader extends AbstractRecordReader {
     private final List<SchemaPath> requestedColumns;
     private final RuntimeExcelTableConfig config;
     private final boolean unionEnabled;
+    private final boolean stringify;
 
     private DrillBuf buffer;
     private VectorContainerWriter writer;
@@ -76,7 +77,7 @@ public class ExcelRecordReader extends AbstractRecordReader {
         this.requestedColumns = columns;
         this.config = config;
         this.unionEnabled = fragmentContext.getOptions().getOption(ExecConstants.ENABLE_UNION_TYPE);
-
+        this.stringify = config.isStringify();
     }
 
     public void setup(final OperatorContext context, final OutputMutator output) throws ExecutionSetupException {
@@ -93,7 +94,7 @@ public class ExcelRecordReader extends AbstractRecordReader {
                     .withFloatingFooter(this.config.isFloatingRangeFooter())
                     .build();
 
-            this.cellRangeReader = new CellRangeReader(sheet, cellRange);
+            this.cellRangeReader = new CellRangeReader(sheet, cellRange, config.isStringify());
             this.headers = this.config.isExtractHeaders() ? extractHeaders(cellRangeReader.next()) : new HashMap<>();
 
             setColumns(this.requestedColumns);
@@ -195,7 +196,9 @@ public class ExcelRecordReader extends AbstractRecordReader {
 
     private void map(BaseWriter.MapWriter map, String key, Object value) {
         if (value == null) {
-            return;
+            if (stringify) {
+                map.varChar(key);
+            }
         }
 
 

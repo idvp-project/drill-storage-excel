@@ -17,12 +17,14 @@
  */
 package org.apache.drill.exec.store.excel.config;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import com.google.common.collect.ImmutableList;
 import org.apache.drill.common.logical.FormatPluginConfig;
 
 import java.util.List;
+import java.util.Objects;
 
 @JsonTypeName("excel")
 public class ExcelFormatConfig implements FormatPluginConfig {
@@ -31,13 +33,17 @@ public class ExcelFormatConfig implements FormatPluginConfig {
 
     private List<String> extensions = ImmutableList.of("xls", "xlsx");
     private boolean extractHeaders;
+    private boolean stringify = true;
 
     private ExcelFormatConfig () {}
 
+    @JsonCreator
     public ExcelFormatConfig(@JsonProperty("extensions") List<String> extensions,
-                            @JsonProperty("extractHeaders") Boolean extractHeaders) {
+                             @JsonProperty("extractHeaders") Boolean extractHeaders,
+                             @JsonProperty("stringify") Boolean stringify) {
         this.extensions = extensions;
         this.extractHeaders = extractHeaders != null ? extractHeaders : true;
+        this.stringify = stringify == null ? true : stringify;
     }
 
     public List<String> getExtensions() {
@@ -48,22 +54,22 @@ public class ExcelFormatConfig implements FormatPluginConfig {
         return extractHeaders;
     }
 
+    public boolean isStringify() {
+        return stringify;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-
         ExcelFormatConfig that = (ExcelFormatConfig) o;
-
-        if (extractHeaders != that.extractHeaders) return false;
-        return extensions != null ? extensions.equals(that.extensions) : that.extensions == null;
+        return extractHeaders == that.extractHeaders &&
+                stringify == that.stringify &&
+                Objects.equals(extensions, that.extensions);
     }
 
     @Override
     public int hashCode() {
-        int result = extensions != null ? extensions.hashCode() : 0;
-        result = 31 * result + (extractHeaders ? 1 : 0);
-        return result;
+        return Objects.hash(extensions, extractHeaders, stringify);
     }
-
 }

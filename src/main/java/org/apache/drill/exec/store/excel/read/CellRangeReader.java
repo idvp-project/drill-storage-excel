@@ -29,22 +29,26 @@ public class CellRangeReader implements Iterator<Map<Integer, Object>> {
     private final Sheet sheet;
     private final CellRange cellRange;
     private final FormulaEvaluator evaluator;
+    private final boolean stringify;
+    private final DataFormatter dataFormatter;
 
     private Set<Integer> filter = null;
 
     private int index;
     private final int lastRow;
 
-    public CellRangeReader(Sheet sheet, CellRange cellRange) {
+    CellRangeReader(Sheet sheet, CellRange cellRange, boolean stringify) {
         this.sheet = sheet;
         this.cellRange = cellRange;
         this.evaluator = sheet.getWorkbook().getCreationHelper().createFormulaEvaluator();
+        this.dataFormatter = new DataFormatter();
 
         this.index = cellRange.getRowStart() != null ? cellRange.getRowStart() : sheet.getFirstRowNum();
         this.lastRow = cellRange.getRowEnd() != null ? cellRange.getRowEnd() : sheet.getLastRowNum();
+        this.stringify = stringify;
     }
 
-    public void setColumnFilter(Set<Integer> filter) {
+    void setColumnFilter(Set<Integer> filter) {
         if(filter != null && cellRange != null) {
             for (Integer f : filter) {
                 if(!cellRange.isColumnInRange(f)) {
@@ -55,10 +59,12 @@ public class CellRangeReader implements Iterator<Map<Integer, Object>> {
         this.filter = filter;
     }
 
+    @Override
     public boolean hasNext() {
         return index <= lastRow;
     }
 
+    @Override
     public Map<Integer, Object> next() {
         if(!hasNext()) {
             throw new CellRangeReaderException("Invalid read operation");
@@ -89,20 +95,25 @@ public class CellRangeReader implements Iterator<Map<Integer, Object>> {
     }
 
     private Object getCellValue(Cell cell) {
-        switch (cell.getCellTypeEnum()) {
-            case STRING:
-                return cell.getStringCellValue();
-            case BOOLEAN:
-                return cell.getBooleanCellValue();
-            case NUMERIC:
-                if (DateUtil.isCellDateFormatted(cell)) {
-                    return cell.getDateCellValue();
-                }
-                return cell.getNumericCellValue();
-            case FORMULA:
-                return getCellValue(evaluator.evaluate(cell));
-            default:
-                return null;
+        if (stringify) {
+            return dataFormatter.formatCellValue(cell);
+        } else {
+
+            switch (cell.getCellTypeEnum()) {
+                case STRING:
+                    return cell.getStringCellValue();
+                case BOOLEAN:
+                    return cell.getBooleanCellValue();
+                case NUMERIC:
+                    if (DateUtil.isCellDateFormatted(cell)) {
+                        return cell.getDateCellValue();
+                    }
+                    return cell.getNumericCellValue();
+                case FORMULA:
+                    return getCellValue(evaluator.evaluate(cell));
+                default:
+                    return null;
+            }
         }
     }
 

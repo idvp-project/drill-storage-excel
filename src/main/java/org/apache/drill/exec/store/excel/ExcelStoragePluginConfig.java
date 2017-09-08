@@ -23,15 +23,18 @@ import org.apache.drill.common.logical.StoragePluginConfigBase;
 import org.apache.drill.exec.store.excel.config.ExcelTableConfig;
 
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * Created by mnasyrov on 11.08.2017.
  */
+@SuppressWarnings("WeakerAccess")
 @JsonTypeName(ExcelStoragePluginConfig.NAME)
 public class ExcelStoragePluginConfig extends StoragePluginConfigBase {
 
     static final String NAME = "excel";
     public String connection;
+    public boolean stringify = true;
     public Map<String, String> config;
     public Map<String, ExcelTableConfig> tables;
 
@@ -39,22 +42,16 @@ public class ExcelStoragePluginConfig extends StoragePluginConfigBase {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-
         ExcelStoragePluginConfig that = (ExcelStoragePluginConfig) o;
-
-        if (connection != null ? !connection.equals(that.connection) : that.connection != null) return false;
-        if (config != null ? !config.equals(that.config) : that.config != null) return false;
-        return tables != null ? tables.equals(that.tables) : that.tables == null;
+        return Objects.equals(connection, that.connection) &&
+                Objects.equals(config, that.config) &&
+                Objects.equals(tables, that.tables);
     }
 
     @Override
     public int hashCode() {
-        int result = connection != null ? connection.hashCode() : 0;
-        result = 31 * result + (config != null ? config.hashCode() : 0);
-        result = 31 * result + (tables != null ? tables.hashCode() : 0);
-        return result;
+        return Objects.hash(connection, config, tables);
     }
-
 
     @JsonIgnore
     RuntimeExcelTableConfig getRuntimeConfig(String table) {
