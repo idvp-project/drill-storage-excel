@@ -145,10 +145,14 @@ public class ExcelRecordReader extends AbstractRecordReader {
             name = DEFAULT_COLUMN_NAME;
         }
 
+        name = name.replace('.', '_');
+
         if (!columnNameCounters.containsKey(name)) {
             columnNameCounters.put(name, 0);
         }
+
         Integer nameCounter = columnNameCounters.get(name);
+
         String result;
         if (DEFAULT_COLUMN_NAME.equals(name))
             result = String.format("%s%s", name, colNum);
