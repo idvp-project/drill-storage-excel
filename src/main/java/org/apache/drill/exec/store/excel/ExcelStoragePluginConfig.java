@@ -19,7 +19,6 @@ package org.apache.drill.exec.store.excel;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonTypeName;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.drill.common.logical.StoragePluginConfigBase;
 import org.apache.drill.exec.store.excel.config.ExcelTableConfig;
 
@@ -59,12 +58,13 @@ public class ExcelStoragePluginConfig extends StoragePluginConfigBase {
         ExcelTableConfig excelTableConfig = tables.get(table);
 
         if (excelTableConfig == null) {
-           //Пробуем найти с ignoreCase:
-           excelTableConfig = tables.entrySet().stream()
-                   .filter(t -> StringUtils.equalsIgnoreCase(t.getKey(), table))
-                   .findFirst()
-                   .map(Map.Entry::getValue)
-                   .orElse(null);
+            //Пробуем найти с ignoreCase:
+            for (String key : tables.keySet()) {
+                if (key != null && key.equalsIgnoreCase(table)) {
+                    excelTableConfig = tables.get(key);
+                    break;
+                }
+            }
         }
 
         if (excelTableConfig == null) {
