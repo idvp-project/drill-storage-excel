@@ -19,6 +19,7 @@ package org.apache.drill.exec.store.excel;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonTypeName;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.drill.common.logical.StoragePluginConfigBase;
 import org.apache.drill.exec.store.excel.config.ExcelTableConfig;
 
@@ -56,9 +57,20 @@ public class ExcelStoragePluginConfig extends StoragePluginConfigBase {
     @JsonIgnore
     RuntimeExcelTableConfig getRuntimeConfig(String table) {
         ExcelTableConfig excelTableConfig = tables.get(table);
-        if(excelTableConfig == null) {
-            throw new IllegalArgumentException("Unconfigured table " + table);
+
+        if (excelTableConfig == null) {
+           //Пробуем найти с ignoreCase:
+           excelTableConfig = tables.entrySet().stream()
+                   .filter(t -> StringUtils.equalsIgnoreCase(t.getKey(), table))
+                   .findFirst()
+                   .map(Map.Entry::getValue)
+                   .orElse(null);
         }
+
+        if (excelTableConfig == null) {
+            throw new IllegalArgumentException("Unknown table name" + table);
+        }
+
         return new RuntimeExcelTableConfig(this, excelTableConfig);
     }
 
