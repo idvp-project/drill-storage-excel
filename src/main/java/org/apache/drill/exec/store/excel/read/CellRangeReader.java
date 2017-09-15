@@ -96,7 +96,7 @@ public class CellRangeReader implements Iterator<Map<Integer, Object>> {
 
     private Object getCellValue(Cell cell) {
         if (stringify) {
-            return dataFormatter.formatCellValue(cell);
+            return dataFormatter.formatCellValue(cell, evaluator);
         } else {
 
             switch (cell.getCellTypeEnum()) {
