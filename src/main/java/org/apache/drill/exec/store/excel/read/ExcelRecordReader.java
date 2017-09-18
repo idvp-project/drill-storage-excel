@@ -135,7 +135,7 @@ public class ExcelRecordReader extends AbstractRecordReader {
     private Map<String, Integer> columnNameCounters = new HashMap<>();
 
     private String createColumnName(String name, Integer colNum) {
-        if (StringUtils.isWhitespace(name)) {
+        if (StringUtils.isBlank(name)) {
             name = DEFAULT_COLUMN_NAME;
         }
 
