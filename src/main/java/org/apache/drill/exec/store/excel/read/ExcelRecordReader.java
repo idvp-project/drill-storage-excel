@@ -19,7 +19,6 @@ package org.apache.drill.exec.store.excel.read;
 
 import io.netty.buffer.DrillBuf;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.drill.common.exceptions.ExecutionSetupException;
 import org.apache.drill.common.exceptions.UserException;
 import org.apache.drill.common.expression.SchemaPath;
@@ -92,6 +91,7 @@ public class ExcelRecordReader extends AbstractRecordReader {
             CellRange cellRange = new CellRangeBuilder()
                     .withRange(this.config.getCellRange())
                     .withFloatingFooter(this.config.isFloatingRangeFooter())
+                    .withSheet(sheet)
                     .build();
 
             this.cellRangeReader = new CellRangeReader(sheet, cellRange, config.isStringify());
@@ -103,20 +103,14 @@ public class ExcelRecordReader extends AbstractRecordReader {
                 Set<Integer> columnFilter = new HashSet<>();
                 for (SchemaPath path : requestedColumns) {
                     String col = path.getRootSegment().getPath();
-                    Integer key = headers.entrySet().stream().filter(c -> col.equals(c.getValue())).map(Map.Entry::getKey).findFirst().orElse(null);
+                    Integer key = headers.entrySet()
+                            .stream()
+                            .filter(c -> col.equals(c.getValue()))
+                            .map(Map.Entry::getKey)
+                            .findFirst()
+                            .orElse(null);
                     if (key != null) {
                         columnFilter.add(key);
-                    } else {
-                        if (col.startsWith(DEFAULT_COLUMN_NAME)) {
-                            String colNumStr = col.replace(DEFAULT_COLUMN_NAME, "");
-                            if (NumberUtils.isDigits(colNumStr)) {
-                                columnFilter.add(Integer.valueOf(colNumStr));
-                            } else {
-                                throw new RuntimeException(String.format("Illegal column requested: '%s'", col));
-                            }
-                        } else {
-                            throw new RuntimeException(String.format("Illegal column requested: '%s'", col));
-                        }
                     }
                 }
 
@@ -175,7 +169,12 @@ public class ExcelRecordReader extends AbstractRecordReader {
 
             while (cellRangeReader.hasNext() && recordCount < MAX_RECORDS_PER_BATCH) {
                 Map<Integer, Object> next = cellRangeReader.next();
-                if (!next.values().stream().allMatch(Objects::isNull)) {
+                if (next
+                        .values()
+                        .stream()
+                        .anyMatch(Objects::nonNull)
+                    || stringify) {
+
                     this.writer.setPosition(recordCount);
                     map.start();
 

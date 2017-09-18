@@ -38,6 +38,7 @@ import java.util.List;
 /**
  * Created by mnasyrov on 10.08.2017.
  */
+@SuppressWarnings("unused")
 public class ExcelStoragePlugin extends AbstractStoragePlugin {
 
     private final ExcelSchemaFactory schemaFactory;
@@ -81,7 +82,7 @@ public class ExcelStoragePlugin extends AbstractStoragePlugin {
         schemaFactory.registerSchemas(schemaConfig, parent);
     }
 
-    public Configuration getFsConf() {
+    Configuration getFsConf() {
         return fsConf;
     }
 }

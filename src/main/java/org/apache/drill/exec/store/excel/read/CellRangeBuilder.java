@@ -6,9 +6,9 @@
  * to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
- *
+ * <p>
  * http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -17,33 +17,68 @@
  */
 package org.apache.drill.exec.store.excel.read;
 
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.util.CellRangeAddress;
 
 /**
  * Created by mnasyrov on 14.08.2017.
  */
-public class CellRangeBuilder {
+class CellRangeBuilder {
 
     private String range;
     private Boolean floatingFooter;
+    private Sheet sheet;
 
-    public CellRangeBuilder withRange(String range) {
+    CellRangeBuilder withRange(String range) {
         this.range = range;
         return this;
     }
 
-    public CellRangeBuilder withFloatingFooter(boolean floatingFooter) {
+    CellRangeBuilder withFloatingFooter(boolean floatingFooter) {
         this.floatingFooter = floatingFooter;
         return this;
     }
 
-    public CellRange build() {
-        if(range != null) {
-            CellRangeAddress cr = CellRangeAddress.valueOf(range);
-            return new CellRange(cr.getFirstRow(), floatingFooter ? null : cr.getLastRow(), cr.getFirstColumn(), cr.getLastColumn());
-        } else {
-            return new CellRange(null, null, null, null);
-        }
+    CellRangeBuilder withSheet(Sheet sheet) {
+        this.sheet = sheet;
+        return this;
     }
 
+    CellRange build() {
+        if (sheet == null) {
+            throw new IllegalStateException("Sheet not set");
+        }
+
+        if (range != null) {
+            CellRangeAddress cr = CellRangeAddress.valueOf(range);
+            int lastRow = floatingFooter ? sheet.getLastRowNum() : cr.getLastRow();
+            return new CellRange(cr.getFirstRow(),
+                    lastRow,
+                    cr.getFirstColumn(),
+                    cr.getLastColumn());
+        } else {
+            int colStart = Integer.MAX_VALUE;
+            int colEnd = Integer.MIN_VALUE;
+
+            for (int i = sheet.getFirstRowNum(); i <= sheet.getLastRowNum(); i++) {
+                Row row = sheet.getRow(i);
+                if (row == null) {
+                    continue;
+                }
+                colStart = Math.min(colStart, row.getFirstCellNum());
+                colEnd = Math.max(colEnd, row.getLastCellNum());
+            }
+
+            if (colStart == Integer.MAX_VALUE) {
+                colStart = 1;
+            }
+
+            if (colEnd == Integer.MIN_VALUE) {
+                colEnd = 1;
+            }
+
+            return new CellRange(sheet.getFirstRowNum(), sheet.getLastRowNum(), colStart, colEnd);
+        }
+    }
 }

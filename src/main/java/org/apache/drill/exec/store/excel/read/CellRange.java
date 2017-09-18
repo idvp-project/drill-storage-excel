@@ -6,9 +6,9 @@
  * to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
- *
+ * <p>
  * http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -20,41 +20,38 @@ package org.apache.drill.exec.store.excel.read;
 /**
  * Created by mnasyrov on 14.08.2017.
  */
-public class CellRange {
+class CellRange {
 
-    public Integer getRowStart() {
-        return rowStart;
-    }
+    private final int rowStart;
+    private final int rowEnd;
+    private final int colStart;
+    private final int colEnd;
 
-    public Integer getRowEnd() {
-        return rowEnd;
-    }
-
-    public Integer getColStart() {
-        return colStart;
-    }
-
-    public Integer getColEnd() {
-        return colEnd;
-    }
-
-    private final Integer rowStart;
-    private final Integer rowEnd;
-    private final Integer colStart;
-    private final Integer colEnd;
-
-    CellRange(Integer rowStart, Integer rowEnd, Integer colStart, Integer colEnd) {
+    CellRange(int rowStart, int rowEnd, int colStart, int colEnd) {
         this.rowStart = rowStart;
         this.rowEnd = rowEnd;
         this.colStart = colStart;
         this.colEnd = colEnd;
     }
 
-    boolean isColumnInRange(Integer colIndex) {
-        return (colStart == null || colStart <= colIndex) && (colEnd == null || colEnd >= colIndex);
+    int getRowStart() {
+        return rowStart;
     }
 
-    boolean isRowInRange(Integer rowIndex) {
-        return (rowStart == null || rowStart <= rowIndex) && (rowEnd == null || rowEnd >= rowIndex);
+    int getRowEnd() {
+        return rowEnd;
     }
+
+    int getColStart() {
+        return colStart;
+    }
+
+    int getColEnd() {
+        return colEnd;
+    }
+
+    boolean isColumnInRange(int colIndex) {
+        return colStart <= colIndex && colEnd >= colIndex;
+    }
+
 }

@@ -36,6 +36,7 @@ import org.apache.hadoop.conf.Configuration;
 import java.io.IOException;
 import java.util.List;
 
+@SuppressWarnings({"WeakerAccess", "unused"})
 public class ExcelFormatPlugin extends EasyFormatPlugin<ExcelFormatConfig> {
 
     private static final boolean IS_COMPRESSIBLE = false;

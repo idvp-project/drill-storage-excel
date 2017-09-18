@@ -36,6 +36,7 @@ import java.util.List;
 /**
  * Created by mnasyrov on 11.08.2017.
  */
+@SuppressWarnings("unused")
 public class ExcelScanCreator implements BatchCreator<ExcelSubScan> {
 
     @Override

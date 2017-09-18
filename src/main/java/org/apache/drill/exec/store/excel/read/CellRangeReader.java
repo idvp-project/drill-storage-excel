@@ -43,8 +43,8 @@ public class CellRangeReader implements Iterator<Map<Integer, Object>> {
         this.evaluator = sheet.getWorkbook().getCreationHelper().createFormulaEvaluator();
         this.dataFormatter = new DataFormatter();
 
-        this.index = cellRange.getRowStart() != null ? cellRange.getRowStart() : sheet.getFirstRowNum();
-        this.lastRow = cellRange.getRowEnd() != null ? cellRange.getRowEnd() : sheet.getLastRowNum();
+        this.index = cellRange.getRowStart();
+        this.lastRow = cellRange.getRowEnd();
         this.stringify = stringify;
     }
 
@@ -75,20 +75,28 @@ public class CellRangeReader implements Iterator<Map<Integer, Object>> {
         index++;
 
         if(this.filter != null) {
-            for (Integer cn : this.filter) {
-                Cell cell = row.getCell(cn);
-                result.put(cn, cell != null ? getCellValue(cell) : null);
+            for (int cn : this.filter) {
+                if (row == null) {
+                    result.put(cn, null);
+                } else {
+                    Cell cell = row.getCell(cn);
+                    result.put(cn, cell != null ? getCellValue(cell) : null);
+                }
             }
             return result;
         }
 
-        int startCell = this.cellRange != null ? this.cellRange.getColStart() != null ? this.cellRange.getColStart() : row.getFirstCellNum() : row.getFirstCellNum();
-        int lastCell = this.cellRange != null ? this.cellRange.getColEnd() != null ? this.cellRange.getColEnd() : row.getLastCellNum() : row.getLastCellNum();
+        int startCell = this.cellRange.getColStart();
+        int lastCell = this.cellRange.getColEnd();
 
         if(startCell >= 0 && lastCell >= 0) {
             for (int cn = startCell; cn <= lastCell; cn++) {
-                Cell cell = row.getCell(cn);
-                result.put(cn, cell != null ? getCellValue(cell) : null);
+                if (row == null) {
+                    result.put(cn, null);
+                } else {
+                    Cell cell = row.getCell(cn);
+                    result.put(cn, cell != null ? getCellValue(cell) : null);
+                }
             }
         }
         return result;
@@ -99,6 +107,7 @@ public class CellRangeReader implements Iterator<Map<Integer, Object>> {
             return dataFormatter.formatCellValue(cell, evaluator);
         } else {
 
+            //noinspection deprecation
             switch (cell.getCellTypeEnum()) {
                 case STRING:
                     return cell.getStringCellValue();
