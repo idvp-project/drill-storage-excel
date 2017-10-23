@@ -200,7 +200,7 @@ public class ExcelRecordReader extends AbstractRecordReader {
     private void map(BaseWriter.MapWriter map, String key, Object value) {
         if (value == null) {
             if (stringify) {
-                map.varChar(key);
+                map(map, key, StringUtils.EMPTY);
             }
         }
 
