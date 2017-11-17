@@ -17,6 +17,7 @@
  */
 package org.apache.drill.exec.store.excel.read;
 
+import com.google.common.base.CharMatcher;
 import io.netty.buffer.DrillBuf;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.drill.common.exceptions.ExecutionSetupException;
@@ -135,17 +136,20 @@ public class ExcelRecordReader extends AbstractRecordReader {
     private Map<String, Integer> columnNameCounters = new HashMap<>();
 
     private String createColumnName(String name, Integer colNum) {
+
+        name = CharMatcher.JAVA_ISO_CONTROL
+                .removeFrom(StringUtils.defaultString(name))
+                .replace('.', '_');
+
         if (StringUtils.isBlank(name)) {
             name = DEFAULT_COLUMN_NAME;
         }
-
-        name = name.replace('.', '_');
 
         if (!columnNameCounters.containsKey(name)) {
             columnNameCounters.put(name, 0);
         }
 
-        Integer nameCounter = columnNameCounters.get(name);
+        Integer nameCounter = columnNameCounters.getOrDefault(name, 0);
 
         String result;
         if (DEFAULT_COLUMN_NAME.equals(name))
