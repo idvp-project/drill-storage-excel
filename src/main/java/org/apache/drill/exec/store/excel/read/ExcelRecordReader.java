@@ -138,8 +138,7 @@ public class ExcelRecordReader extends AbstractRecordReader {
     private String createColumnName(String name, Integer colNum) {
 
         name = CharMatcher.JAVA_ISO_CONTROL
-                .removeFrom(StringUtils.defaultString(name))
-                .replace('.', '_');
+                .replaceFrom(StringUtils.defaultString(name), ' ');
 
         if (StringUtils.isBlank(name)) {
             name = DEFAULT_COLUMN_NAME;
