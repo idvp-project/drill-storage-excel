@@ -20,7 +20,6 @@ package org.apache.drill.exec.store.excel.read;
 import com.google.common.base.CharMatcher;
 import com.google.common.base.Charsets;
 import com.google.common.collect.ImmutableList;
-import io.netty.buffer.DrillBuf;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.drill.common.exceptions.ExecutionSetupException;
@@ -28,23 +27,15 @@ import org.apache.drill.common.exceptions.UserException;
 import org.apache.drill.common.expression.SchemaPath;
 import org.apache.drill.common.types.TypeProtos;
 import org.apache.drill.common.types.Types;
-import org.apache.drill.exec.ExecConstants;
 import org.apache.drill.exec.exception.SchemaChangeException;
-import org.apache.drill.exec.expr.holders.Decimal18Holder;
-import org.apache.drill.exec.expr.holders.TimeStampHolder;
-import org.apache.drill.exec.expr.holders.VarCharHolder;
-import org.apache.drill.exec.ops.FragmentContext;
 import org.apache.drill.exec.ops.OperatorContext;
 import org.apache.drill.exec.physical.impl.OutputMutator;
 import org.apache.drill.exec.record.MaterializedField;
 import org.apache.drill.exec.store.AbstractRecordReader;
 import org.apache.drill.exec.store.dfs.DrillFileSystem;
 import org.apache.drill.exec.store.excel.RuntimeExcelTableConfig;
-import org.apache.drill.exec.util.DecimalUtility;
 import org.apache.drill.exec.vector.NullableVarCharVector;
 import org.apache.drill.exec.vector.ValueVector;
-import org.apache.drill.exec.vector.complex.impl.VectorContainerWriter;
-import org.apache.drill.exec.vector.complex.writer.BaseWriter;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.ss.usermodel.Sheet;
@@ -52,8 +43,6 @@ import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
 
 import java.io.IOException;
-import java.math.BigDecimal;
-import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 /**
@@ -75,10 +64,12 @@ public class ExcelRecordReader extends AbstractRecordReader {
     private List<NullableVarCharVector> vectors;
 
     public ExcelRecordReader(DrillFileSystem fileSystem,
+                             List<SchemaPath> columns,
                              RuntimeExcelTableConfig config) {
         assert config != null : "RuntimeExcelTableConfig must be passed";
         this.fileSystem = fileSystem;
         this.config = config;
+        setColumns(columns);
     }
 
     public void setup(final OperatorContext context, final OutputMutator output) throws ExecutionSetupException {

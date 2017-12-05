@@ -63,7 +63,7 @@ public class ExcelFormatPlugin extends EasyFormatPlugin<ExcelFormatConfig> {
 
     @Override
     public RecordReader getRecordReader(FragmentContext fragmentContext, DrillFileSystem drillFileSystem, FileWork fileWork, List<SchemaPath> list, String s) throws ExecutionSetupException {
-        return new ExcelRecordReader(drillFileSystem, new RuntimeExcelTableConfig(fileWork.getPath(), this.config));
+        return new ExcelRecordReader(drillFileSystem, list, new RuntimeExcelTableConfig(fileWork.getPath(), this.config));
     }
 
     @Override

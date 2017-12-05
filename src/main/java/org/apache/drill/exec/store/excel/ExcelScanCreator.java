@@ -60,7 +60,7 @@ public class ExcelScanCreator implements BatchCreator<ExcelSubScan> {
 
         RuntimeExcelTableConfig runtimeConfig = scan.getStoragePluginConfig().getRuntimeConfig(scan.getSpec().getTable());
 
-        RecordReader reader = new ExcelRecordReader(dfs, runtimeConfig);
+        RecordReader reader = new ExcelRecordReader(dfs, scan.getColumns(), runtimeConfig);
 
         return new ScanBatch(scan, context, operatorContext, Collections.singleton(reader).iterator(), Collections.emptyList());
     }
