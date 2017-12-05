@@ -18,6 +18,7 @@
 package org.apache.drill.exec.store.excel;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import org.apache.drill.common.logical.StoragePluginConfigBase;
 import org.apache.drill.exec.store.excel.config.ExcelTableConfig;
@@ -30,11 +31,11 @@ import java.util.Objects;
  */
 @SuppressWarnings("WeakerAccess")
 @JsonTypeName(ExcelStoragePluginConfig.NAME)
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class ExcelStoragePluginConfig extends StoragePluginConfigBase {
 
     static final String NAME = "excel";
     public String connection;
-    public boolean stringify = true;
     public Map<String, String> config;
     public Map<String, ExcelTableConfig> tables;
 

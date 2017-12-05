@@ -17,27 +17,25 @@
  */
 package org.apache.drill.exec.store.excel.read;
 
-import org.apache.commons.lang.NotImplementedException;
 import org.apache.poi.ss.usermodel.*;
 
-import java.util.*;
+import java.util.Iterator;
+import java.util.Optional;
 
 /**
  * Created by mnasyrov on 14.08.2017.
  */
-public class CellRangeReader implements Iterator<Map<Integer, Object>> {
+public class CellRangeReader implements Iterator<String[]> {
     private final Sheet sheet;
     private final CellRange cellRange;
     private final FormulaEvaluator evaluator;
-    private final boolean stringify;
     private final DataFormatter dataFormatter;
-
-    private Set<Integer> filter = null;
 
     private int index;
     private final int lastRow;
 
-    CellRangeReader(Sheet sheet, CellRange cellRange, boolean stringify) {
+    CellRangeReader(Sheet sheet,
+                    CellRange cellRange) {
         this.sheet = sheet;
         this.cellRange = cellRange;
         this.evaluator = sheet.getWorkbook().getCreationHelper().createFormulaEvaluator();
@@ -45,18 +43,6 @@ public class CellRangeReader implements Iterator<Map<Integer, Object>> {
 
         this.index = cellRange.getRowStart();
         this.lastRow = cellRange.getRowEnd();
-        this.stringify = stringify;
-    }
-
-    void setColumnFilter(Set<Integer> filter) {
-        if(filter != null && cellRange != null) {
-            for (Integer f : filter) {
-                if(!cellRange.isColumnInRange(f)) {
-                    throw new CellRangeReaderException("Columns filter is out of range bounds");
-                }
-            }
-        }
-        this.filter = filter;
     }
 
     @Override
@@ -65,85 +51,36 @@ public class CellRangeReader implements Iterator<Map<Integer, Object>> {
     }
 
     @Override
-    public Map<Integer, Object> next() {
+    public String[] next() {
         if(!hasNext()) {
             throw new CellRangeReaderException("Invalid read operation");
         }
 
-        Map<Integer, Object> result = new LinkedHashMap<>();
+        String[] result = new String[Math.abs(cellRange.getColEnd() - cellRange.getColStart()) + 1];
         Row row = sheet.getRow(index);
         index++;
 
-        if(this.filter != null) {
-            for (int cn : this.filter) {
-                if (row == null) {
-                    result.put(cn, null);
-                } else {
-                    Cell cell = row.getCell(cn);
-                    result.put(cn, cell != null ? getCellValue(cell) : null);
-                }
-            }
-            return result;
-        }
 
         int startCell = this.cellRange.getColStart();
         int lastCell = this.cellRange.getColEnd();
 
-        if(startCell >= 0 && lastCell >= 0) {
+        if(startCell >= 0 && lastCell >= 0 && lastCell >= startCell) {
             for (int cn = startCell; cn <= lastCell; cn++) {
                 if (row == null) {
-                    result.put(cn, null);
+                    result[cn - startCell] = null;
                 } else {
                     Cell cell = row.getCell(cn);
-                    result.put(cn, cell != null ? getCellValue(cell) : null);
+                    result[cn - startCell] = Optional
+                            .ofNullable(cell)
+                            .map(this::getCellValue)
+                            .orElse(null);
                 }
             }
         }
         return result;
     }
 
-    private Object getCellValue(Cell cell) {
-        if (stringify) {
-            return dataFormatter.formatCellValue(cell, evaluator);
-        } else {
-
-            //noinspection deprecation
-            switch (cell.getCellTypeEnum()) {
-                case STRING:
-                    return cell.getStringCellValue();
-                case BOOLEAN:
-                    return cell.getBooleanCellValue();
-                case NUMERIC:
-                    if (DateUtil.isCellDateFormatted(cell)) {
-                        return cell.getDateCellValue();
-                    }
-                    return cell.getNumericCellValue();
-                case FORMULA:
-                    return getCellValue(evaluator.evaluate(cell));
-                default:
-                    return null;
-            }
-        }
-    }
-
-    private Object getCellValue(CellValue cell) {
-        if (cell == null) {
-            return null;
-        }
-
-        switch (cell.getCellTypeEnum()) {
-            case STRING:
-                return cell.getStringValue();
-            case BOOLEAN:
-                return cell.getBooleanValue();
-            case NUMERIC:
-                return cell.getNumberValue();
-            default:
-                return null;
-        }
-    }
-
-    public void remove() {
-        throw new NotImplementedException();
+    private String getCellValue(Cell cell) {
+        return dataFormatter.formatCellValue(cell, evaluator);
     }
 }

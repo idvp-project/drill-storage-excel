@@ -31,26 +31,27 @@ public class RuntimeExcelTableConfig {
     private final Path location;
     private final String worksheet;
     private final String cellRange;
-    private final boolean stringify;
     private final boolean floatingRangeFooter;
     private final boolean extractHeaders;
+    private final boolean closeFS;
 
-    RuntimeExcelTableConfig(ExcelStoragePluginConfig storagePluginConfig, ExcelTableConfig tableConfig) {
+    RuntimeExcelTableConfig(ExcelStoragePluginConfig storagePluginConfig,
+                            ExcelTableConfig tableConfig) {
         this.location = new Path(storagePluginConfig.connection, tableConfig.getLocation());
         this.worksheet = tableConfig.getWorksheet();
         this.cellRange = tableConfig.getCellRange();
         this.floatingRangeFooter = tableConfig.isFloatingRangeFooter();
         this.extractHeaders = tableConfig.isExtractHeaders();
-        this.stringify = storagePluginConfig.stringify;
+        this.closeFS = true;
     }
 
     RuntimeExcelTableConfig(String filePath, ExcelFormatConfig formatConfig) {
         this.location = new Path(filePath);
         this.extractHeaders = formatConfig.isExtractHeaders();
-        this.stringify = formatConfig.isStringify();
         this.worksheet = null;
         this.cellRange = null;
         this.floatingRangeFooter = false;
+        this.closeFS = false;
     }
 
     public Path getLocation() {
@@ -73,18 +74,14 @@ public class RuntimeExcelTableConfig {
         return floatingRangeFooter;
     }
 
-    public boolean isStringify() {
-        return stringify;
-    }
-
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         RuntimeExcelTableConfig that = (RuntimeExcelTableConfig) o;
-        return stringify == that.stringify &&
-                floatingRangeFooter == that.floatingRangeFooter &&
+        return floatingRangeFooter == that.floatingRangeFooter &&
                 extractHeaders == that.extractHeaders &&
+                closeFS == that.closeFS &&
                 Objects.equals(location, that.location) &&
                 Objects.equals(worksheet, that.worksheet) &&
                 Objects.equals(cellRange, that.cellRange);
@@ -92,6 +89,10 @@ public class RuntimeExcelTableConfig {
 
     @Override
     public int hashCode() {
-        return Objects.hash(location, worksheet, cellRange, stringify, floatingRangeFooter, extractHeaders);
+        return Objects.hash(location, worksheet, cellRange, floatingRangeFooter, extractHeaders, closeFS);
+    }
+
+    public boolean isCloseFS() {
+        return closeFS;
     }
 }
