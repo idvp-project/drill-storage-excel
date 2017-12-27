@@ -62,7 +62,7 @@ public class ExcelScanCreator implements BatchCreator<ExcelSubScan> {
 
         RecordReader reader = new ExcelRecordReader(dfs, scan.getColumns(), runtimeConfig);
 
-        return new ScanBatch(scan, context, operatorContext, Collections.singletonList(reader), Collections.emptyList());
+        return new ScanBatch(scan, context, operatorContext, Collections.singletonList(reader).iterator(), Collections.emptyList());
     }
 
 
