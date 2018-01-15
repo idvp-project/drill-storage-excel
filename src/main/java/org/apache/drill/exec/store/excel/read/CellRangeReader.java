@@ -6,9 +6,9 @@
  * to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
- *
+ * <p>
  * http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -26,23 +26,25 @@ import java.util.Optional;
  * Created by mnasyrov on 14.08.2017.
  */
 public class CellRangeReader implements Iterator<String[]> {
-    private final Sheet sheet;
     private final CellRange cellRange;
     private final FormulaEvaluator evaluator;
     private final DataFormatter dataFormatter;
+    private final Iterator<Row> rowIterator;
 
     private int index;
     private final int lastRow;
+    private Row lastRiddenRow;
 
     CellRangeReader(Sheet sheet,
                     CellRange cellRange) {
-        this.sheet = sheet;
         this.cellRange = cellRange;
         this.evaluator = sheet.getWorkbook().getCreationHelper().createFormulaEvaluator();
         this.dataFormatter = new DataFormatter();
 
         this.index = cellRange.getRowStart();
         this.lastRow = cellRange.getRowEnd();
+
+        this.rowIterator = sheet.rowIterator();
     }
 
     @Override
@@ -52,31 +54,58 @@ public class CellRangeReader implements Iterator<String[]> {
 
     @Override
     public String[] next() {
-        if(!hasNext()) {
+        if (!hasNext()) {
             throw new CellRangeReaderException("Invalid read operation");
         }
 
         String[] result = new String[Math.abs(cellRange.getColEnd() - cellRange.getColStart()) + 1];
-        Row row = sheet.getRow(index);
-        index++;
+        try {
+            if (lastRiddenRow != null && index < lastRiddenRow.getRowNum() + 1) {
+                //getRowNum - 0-based. Поэтому добавляем к getRowNum 1
+                //Последняя прочитанная строка находится ЗА индексом
+                //Возвращаем пустоту
+                return result;
+            }
 
 
-        int startCell = this.cellRange.getColStart();
-        int lastCell = this.cellRange.getColEnd();
-
-        if(startCell >= 0 && lastCell >= 0 && lastCell >= startCell) {
-            for (int cn = startCell; cn <= lastCell; cn++) {
-                if (row == null) {
-                    result[cn - startCell] = null;
+            if (lastRiddenRow == null || index > lastRiddenRow.getRowNum() + 1) {
+                if (rowIterator.hasNext()) {
+                    while (rowIterator.hasNext()) {
+                        lastRiddenRow = rowIterator.next();
+                        if (lastRiddenRow.getRowNum() + 1 >= cellRange.getRowStart()) {
+                            break;
+                        }
+                    }
                 } else {
-                    Cell cell = row.getCell(cn);
-                    result[cn - startCell] = Optional
-                            .ofNullable(cell)
-                            .map(this::getCellValue)
-                            .orElse(null);
+                    //Если нет следующей строки -
+                    lastRiddenRow = null;
                 }
             }
+
+            if (lastRiddenRow == null || index < lastRiddenRow.getRowNum() + 1) {
+                return result;
+            }
+
+            int startCell = this.cellRange.getColStart();
+            int lastCell = this.cellRange.getColEnd();
+
+            if (startCell >= 0 && lastCell >= 0 && lastCell >= startCell) {
+                for (int cn = startCell; cn <= lastCell; cn++) {
+                    if (lastRiddenRow == null) {
+                        result[cn - startCell] = null;
+                    } else {
+                        Cell cell = lastRiddenRow.getCell(cn);
+                        result[cn - startCell] = Optional
+                                .ofNullable(cell)
+                                .map(this::getCellValue)
+                                .orElse(null);
+                    }
+                }
+            }
+        } finally {
+            index++;
         }
+
         return result;
     }
 
