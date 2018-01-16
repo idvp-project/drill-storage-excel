@@ -17,10 +17,10 @@
  */
 package org.apache.drill.exec.store.excel.read;
 
+import com.monitorjbl.xlsx.StreamingReader;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
-import org.apache.poi.ss.usermodel.WorkbookFactory;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -81,11 +81,14 @@ public class CellRangeReaderTest {
 
 
     private List<String[]> readRange(String fileName, CellRange range) throws IOException, InvalidFormatException {
-        Workbook sheets = WorkbookFactory.create(new File(fileName));
+        Workbook sheets = StreamingReader.builder()
+                .rowCacheSize(100)
+                .bufferSize(4096)
+                .open(new File(fileName));
         Sheet sheet = sheets.getSheetAt(0);
 
         List<String[]> result = new ArrayList<>();
-        CellRangeReader reader = new CellRangeReader(sheet, range);
+        CellRangeReader reader = new CellRangeReader(sheet, range, false);
         while (reader.hasNext()) {
             result.add(reader.next());
         }

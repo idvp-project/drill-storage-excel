@@ -36,15 +36,17 @@ public class CellRangeReader implements Iterator<String[]> {
     private Row lastRiddenRow;
 
     CellRangeReader(Sheet sheet,
-                    CellRange cellRange) {
+                    CellRange cellRange,
+                    boolean evaluateFormula) {
         this.cellRange = cellRange;
-        this.evaluator = sheet.getWorkbook().getCreationHelper().createFormulaEvaluator();
+        this.evaluator = evaluateFormula ? sheet.getWorkbook().getCreationHelper().createFormulaEvaluator() : null;
         this.dataFormatter = new DataFormatter();
 
         this.index = cellRange.getRowStart();
         this.lastRow = cellRange.getRowEnd();
 
         this.rowIterator = sheet.rowIterator();
+        
     }
 
     @Override

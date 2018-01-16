@@ -42,6 +42,12 @@
             <artifactId>poi-ooxml</artifactId>
             <version>3.17</version>
         </dependency>
+        <dependency>
+            <groupId>com.monitorjbl</groupId>
+            <artifactId>xlsx-streamer</artifactId>
+            <version>1.2.0</version>
+        </dependency>
+
     </dependencies>
 
     <profiles>
@@ -67,11 +73,12 @@
                                         <includes>
                                             <include>org.apache.poi:poi</include>
                                             <include>org.apache.poi:poi-ooxml</include>
+                                            <include>org.apache.poi:poi-ooxml-schemas</include>
                                             <include>org.apache.xmlbeans:xmlbeans</include>
                                             <include>commons-codec:commons-codec</include>
                                             <include>org.apache.commons:commons-collections4</include>
-                                            <include>org.apache.poi:poi-ooxml-schemas</include>
                                             <include>com.github.virtuald:curvesapi</include>
+                                            <include>com.monitorjbl:xlsx-streamer</include>
                                         </includes>
                                     </artifactSet>
                                 </configuration>
