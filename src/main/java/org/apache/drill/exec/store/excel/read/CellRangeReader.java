@@ -62,7 +62,7 @@ public class CellRangeReader implements Iterator<String[]> {
 
         String[] result = new String[Math.abs(cellRange.getColEnd() - cellRange.getColStart()) + 1];
         try {
-            if (lastRiddenRow != null && index < lastRiddenRow.getRowNum() + 1) {
+            if (lastRiddenRow != null && index < lastRiddenRow.getRowNum()) {
                 //getRowNum - 0-based. Поэтому добавляем к getRowNum 1
                 //Последняя прочитанная строка находится ЗА индексом
                 //Возвращаем пустоту
@@ -70,11 +70,11 @@ public class CellRangeReader implements Iterator<String[]> {
             }
 
 
-            if (lastRiddenRow == null || index > lastRiddenRow.getRowNum() + 1) {
+            if (lastRiddenRow == null || index > lastRiddenRow.getRowNum()) {
                 if (rowIterator.hasNext()) {
                     while (rowIterator.hasNext()) {
                         lastRiddenRow = rowIterator.next();
-                        if (lastRiddenRow.getRowNum() + 1 >= cellRange.getRowStart()) {
+                        if (lastRiddenRow.getRowNum() >= cellRange.getRowStart()) {
                             break;
                         }
                     }
@@ -84,7 +84,7 @@ public class CellRangeReader implements Iterator<String[]> {
                 }
             }
 
-            if (lastRiddenRow == null || index < lastRiddenRow.getRowNum() + 1) {
+            if (lastRiddenRow == null || index < lastRiddenRow.getRowNum()) {
                 return result;
             }
 

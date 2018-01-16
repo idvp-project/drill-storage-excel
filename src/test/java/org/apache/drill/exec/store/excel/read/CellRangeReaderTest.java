@@ -37,7 +37,7 @@ public class CellRangeReaderTest {
 
     @Test
     public void test1ReadXlsx1() throws IOException, InvalidFormatException {
-        CellRange range = new CellRange(1, 7, 0, 2);
+        CellRange range = new CellRange(0, 6, 0, 2);
         List<String[]> result = readRange("src/test/resources/test1.xlsx", range);
         Assert.assertEquals(7, result.size());
         assertNullArray(result, 2);
@@ -47,7 +47,7 @@ public class CellRangeReaderTest {
 
     @Test
     public void test1ReadXlsx2() throws IOException, InvalidFormatException {
-        CellRange range = new CellRange(3, 7, 0, 2);
+        CellRange range = new CellRange(2, 6, 0, 2);
         List<String[]> result = readRange("src/test/resources/test1.xlsx", range);
         Assert.assertEquals(5, result.size());
         assertNullArray(result, 0);
@@ -57,7 +57,7 @@ public class CellRangeReaderTest {
 
     @Test
     public void test1ReadXlsx3() throws IOException, InvalidFormatException {
-        CellRange range = new CellRange(5, 6, 0, 2);
+        CellRange range = new CellRange(4, 5, 0, 2);
         List<String[]> result = readRange("src/test/resources/test1.xlsx", range);
         Assert.assertEquals(2, result.size());
         assertNullArray(result, 0);
@@ -66,7 +66,7 @@ public class CellRangeReaderTest {
 
     @Test
     public void test2ReadXlsx1() throws IOException, InvalidFormatException {
-        CellRange range = new CellRange(1, 100, 0, 6);
+        CellRange range = new CellRange(0, 99, 0, 6);
         List<String[]> result = readRange("src/test/resources/test2.xlsx", range);
         Assert.assertEquals(100, result.size());
         assertNullArray(result, 2);
