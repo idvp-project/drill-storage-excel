@@ -20,6 +20,7 @@ package org.apache.drill.exec.store.excel.read;
 import com.google.common.base.CharMatcher;
 import com.google.common.base.Charsets;
 import com.google.common.collect.ImmutableList;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.drill.common.exceptions.ExecutionSetupException;
@@ -42,7 +43,10 @@ import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.*;
 
 /**
@@ -57,7 +61,6 @@ public class ExcelRecordReader extends AbstractRecordReader {
     private final DrillFileSystem fileSystem;
     private final RuntimeExcelTableConfig config;
     private Workbook wb;
-    private FSDataInputStream fsStream;
     private CellRangeReader cellRangeReader;
     private final Map<String, Integer> columnNameCounters = new HashMap<>();
 
@@ -74,9 +77,8 @@ public class ExcelRecordReader extends AbstractRecordReader {
 
     public void setup(final OperatorContext context, final OutputMutator output) throws ExecutionSetupException {
         try {
-            this.fsStream = fileSystem.open(config.getLocation());
-
-            this.wb = WorkbookFactory.create(fsStream);
+            File tempFile = createTempFile();
+            this.wb = WorkbookFactory.create(tempFile);
             final Sheet sheet = config.getWorksheet() == null ? wb.getSheetAt(0) : wb.getSheet(config.getWorksheet());
 
             CellRange cellRange = new CellRangeBuilder()
@@ -180,9 +182,18 @@ public class ExcelRecordReader extends AbstractRecordReader {
 
     public void close() throws Exception {
         this.wb.close();
-        this.fsStream.close();
         if (this.config.isCloseFS()) {
             this.fileSystem.close();
         }
+    }
+
+    private File createTempFile() throws IOException {
+        File tempFile = File.createTempFile("excel", ".tmp");
+        try (InputStream is = fileSystem.open(config.getLocation())) {
+            try (FileOutputStream os = new FileOutputStream(tempFile)) {
+                IOUtils.copy(is, os);
+            }
+        }
+        return tempFile;
     }
 }
