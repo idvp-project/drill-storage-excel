@@ -17,7 +17,6 @@
  */
 package org.apache.drill.exec.store.excel.read;
 
-import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.util.CellRangeAddress;
 
@@ -52,33 +51,17 @@ class CellRangeBuilder {
 
         if (range != null) {
             CellRangeAddress cr = CellRangeAddress.valueOf(range);
-            int lastRow = floatingFooter ? sheet.getLastRowNum() : cr.getLastRow();
+            int lastRow = cr.getLastRow();
+            if (floatingFooter) {
+                lastRow = new SheetRangeDetector(sheet).detectRange().getRowEnd();
+            }
+
             return new CellRange(cr.getFirstRow(),
                     lastRow,
                     cr.getFirstColumn(),
                     cr.getLastColumn());
         } else {
-            int colStart = Integer.MAX_VALUE;
-            int colEnd = Integer.MIN_VALUE;
-
-            for (int i = sheet.getFirstRowNum(); i <= sheet.getLastRowNum(); i++) {
-                Row row = sheet.getRow(i);
-                if (row == null) {
-                    continue;
-                }
-                colStart = Math.min(colStart, row.getFirstCellNum());
-                colEnd = Math.max(colEnd, row.getLastCellNum());
-            }
-
-            if (colStart == Integer.MAX_VALUE) {
-                colStart = 1;
-            }
-
-            if (colEnd == Integer.MIN_VALUE) {
-                colEnd = 1;
-            }
-
-            return new CellRange(sheet.getFirstRowNum(), sheet.getLastRowNum(), colStart, colEnd);
+            return new SheetRangeDetector(sheet).detectRange();
         }
     }
 }

@@ -6,9 +6,9 @@
  * to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
- *
+ * <p>
  * http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -19,6 +19,8 @@ package org.apache.drill.exec.store.excel.config;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import java.util.Objects;
+
 /**
  * Created by mnasyrov on 11.08.2017.
  */
@@ -28,17 +30,20 @@ public class ExcelTableConfig {
     private final String cellRange;
     private final boolean floatingRangeFooter;
     private final boolean extractHeaders;
+    private final boolean evaluateFormula;
 
     public ExcelTableConfig(@JsonProperty("location") String location,
-                           @JsonProperty("worksheet") String worksheet,
-                           @JsonProperty("cellRange") String cellRange,
-                           @JsonProperty("floatingRangeFooter") Boolean floatingRangeFooter,
-                           @JsonProperty("extractHeaders") Boolean extractHeaders) {
+                            @JsonProperty("worksheet") String worksheet,
+                            @JsonProperty("cellRange") String cellRange,
+                            @JsonProperty("floatingRangeFooter") Boolean floatingRangeFooter,
+                            @JsonProperty("extractHeaders") Boolean extractHeaders,
+                            @JsonProperty("evaluateFormula") Boolean evaluateFormula) {
         this.location = location;
         this.worksheet = worksheet;
         this.cellRange = cellRange;
-        this.floatingRangeFooter = floatingRangeFooter != null ? floatingRangeFooter : true;
-        this.extractHeaders = extractHeaders != null ? extractHeaders : true;
+        this.floatingRangeFooter = floatingRangeFooter == null ? true : floatingRangeFooter;
+        this.extractHeaders = extractHeaders == null ? true : extractHeaders;
+        this.evaluateFormula = evaluateFormula == null ? false : evaluateFormula;
     }
 
     public String getLocation() {
@@ -53,36 +58,33 @@ public class ExcelTableConfig {
         return cellRange;
     }
 
-    public Boolean isFloatingRangeFooter() {
+    public boolean isFloatingRangeFooter() {
         return floatingRangeFooter;
     }
 
-
-    public Boolean isExtractHeaders() {
+    public boolean isExtractHeaders() {
         return extractHeaders;
+    }
+
+    public boolean isEvaluateFormula() {
+        return evaluateFormula;
     }
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-
         ExcelTableConfig that = (ExcelTableConfig) o;
-
-        if (floatingRangeFooter != that.floatingRangeFooter) return false;
-        if (extractHeaders != that.extractHeaders) return false;
-        if (location != null ? !location.equals(that.location) : that.location != null) return false;
-        if (worksheet != null ? !worksheet.equals(that.worksheet) : that.worksheet != null) return false;
-        return cellRange != null ? cellRange.equals(that.cellRange) : that.cellRange == null;
+        return floatingRangeFooter == that.floatingRangeFooter &&
+                extractHeaders == that.extractHeaders &&
+                evaluateFormula == that.evaluateFormula &&
+                Objects.equals(location, that.location) &&
+                Objects.equals(worksheet, that.worksheet) &&
+                Objects.equals(cellRange, that.cellRange);
     }
 
     @Override
     public int hashCode() {
-        int result = location != null ? location.hashCode() : 0;
-        result = 31 * result + (worksheet != null ? worksheet.hashCode() : 0);
-        result = 31 * result + (cellRange != null ? cellRange.hashCode() : 0);
-        result = 31 * result + (floatingRangeFooter ? 1 : 0);
-        result = 31 * result + (extractHeaders ? 1 : 0);
-        return result;
+        return Objects.hash(location, worksheet, cellRange, floatingRangeFooter, extractHeaders, evaluateFormula);
     }
 }

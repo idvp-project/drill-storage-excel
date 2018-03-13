@@ -33,6 +33,7 @@ public class RuntimeExcelTableConfig {
     private final String cellRange;
     private final boolean floatingRangeFooter;
     private final boolean extractHeaders;
+    private final boolean evaluateFormula;
     private final boolean closeFS;
 
     RuntimeExcelTableConfig(ExcelStoragePluginConfig storagePluginConfig,
@@ -42,12 +43,14 @@ public class RuntimeExcelTableConfig {
         this.cellRange = tableConfig.getCellRange();
         this.floatingRangeFooter = tableConfig.isFloatingRangeFooter();
         this.extractHeaders = tableConfig.isExtractHeaders();
+        this.evaluateFormula = tableConfig.isEvaluateFormula();
         this.closeFS = true;
     }
 
     RuntimeExcelTableConfig(String filePath, ExcelFormatConfig formatConfig) {
         this.location = new Path(filePath);
         this.extractHeaders = formatConfig.isExtractHeaders();
+        this.evaluateFormula = formatConfig.isEvaluateFormula();
         this.worksheet = null;
         this.cellRange = null;
         this.floatingRangeFooter = false;
@@ -74,6 +77,14 @@ public class RuntimeExcelTableConfig {
         return floatingRangeFooter;
     }
 
+    public boolean isEvaluateFormula() {
+        return evaluateFormula;
+    }
+
+    public boolean isCloseFS() {
+        return closeFS;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -81,6 +92,7 @@ public class RuntimeExcelTableConfig {
         RuntimeExcelTableConfig that = (RuntimeExcelTableConfig) o;
         return floatingRangeFooter == that.floatingRangeFooter &&
                 extractHeaders == that.extractHeaders &&
+                evaluateFormula == that.evaluateFormula &&
                 closeFS == that.closeFS &&
                 Objects.equals(location, that.location) &&
                 Objects.equals(worksheet, that.worksheet) &&
@@ -89,10 +101,6 @@ public class RuntimeExcelTableConfig {
 
     @Override
     public int hashCode() {
-        return Objects.hash(location, worksheet, cellRange, floatingRangeFooter, extractHeaders, closeFS);
-    }
-
-    public boolean isCloseFS() {
-        return closeFS;
+        return Objects.hash(location, worksheet, cellRange, floatingRangeFooter, extractHeaders, evaluateFormula, closeFS);
     }
 }

@@ -20,6 +20,7 @@ package org.apache.drill.exec.store.excel.read;
 import com.google.common.base.CharMatcher;
 import com.google.common.base.Charsets;
 import com.google.common.collect.ImmutableList;
+import com.monitorjbl.xlsx.StreamingReader;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -37,17 +38,19 @@ import org.apache.drill.exec.store.dfs.DrillFileSystem;
 import org.apache.drill.exec.store.excel.RuntimeExcelTableConfig;
 import org.apache.drill.exec.vector.NullableVarCharVector;
 import org.apache.drill.exec.vector.ValueVector;
-import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
+import org.apache.poi.openxml4j.opc.OPCPackage;
+import org.apache.poi.poifs.filesystem.FileMagic;
+import org.apache.poi.poifs.filesystem.NPOIFSFileSystem;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.*;
+import java.io.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Created by mnasyrov on 10.08.2017.
@@ -78,7 +81,7 @@ public class ExcelRecordReader extends AbstractRecordReader {
     public void setup(final OperatorContext context, final OutputMutator output) throws ExecutionSetupException {
         try {
             File tempFile = createTempFile();
-            this.wb = WorkbookFactory.create(tempFile);
+            this.wb = readWorkbook(tempFile, config.isEvaluateFormula());
             final Sheet sheet = config.getWorksheet() == null ? wb.getSheetAt(0) : wb.getSheet(config.getWorksheet());
 
             CellRange cellRange = new CellRangeBuilder()
@@ -87,7 +90,7 @@ public class ExcelRecordReader extends AbstractRecordReader {
                     .withSheet(sheet)
                     .build();
 
-            this.cellRangeReader = new CellRangeReader(sheet, cellRange);
+            this.cellRangeReader = new CellRangeReader(sheet, cellRange, config.isEvaluateFormula());
 
             final String[] headers;
             if (this.config.isExtractHeaders()) {
@@ -103,6 +106,7 @@ public class ExcelRecordReader extends AbstractRecordReader {
                 NullableVarCharVector vector = output.addField(field, NullableVarCharVector.class);
                 vectorBuilder.add(vector);
             }
+
             this.vectors = vectorBuilder.build();
 
         } catch (IOException
@@ -195,5 +199,33 @@ public class ExcelRecordReader extends AbstractRecordReader {
             }
         }
         return tempFile;
+    }
+
+    private Workbook readWorkbook(File file,
+                                  boolean evaluateFormula) throws IOException, InvalidFormatException {
+        if (!file.exists()) {
+            throw new FileNotFoundException(file.toString());
+        }
+
+        try (InputStream inp = new FileInputStream(file)) {
+            InputStream is = FileMagic.prepareToCheckMagic(inp);
+            FileMagic fm = FileMagic.valueOf(is);
+            switch (fm) {
+                case OLE2:
+                    NPOIFSFileSystem fs = new NPOIFSFileSystem(is);
+                    return WorkbookFactory.create(fs);
+                case OOXML:
+                    if (evaluateFormula) {
+                        return new XSSFWorkbook(OPCPackage.open(is));
+                    } else {
+                        return StreamingReader.builder()
+                                .rowCacheSize(100)
+                                .bufferSize(4096)
+                                .open(file);
+                    }
+                default:
+                    throw new InvalidFormatException("Your InputStream was neither an OLE2 stream, nor an OOXML stream");
+            }
+        }
     }
 }
