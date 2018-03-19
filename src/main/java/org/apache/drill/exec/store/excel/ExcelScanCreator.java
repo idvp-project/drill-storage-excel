@@ -18,6 +18,7 @@
 package org.apache.drill.exec.store.excel;
 
 import org.apache.drill.common.exceptions.ExecutionSetupException;
+import org.apache.drill.exec.ops.ExecutorFragmentContext;
 import org.apache.drill.exec.ops.FragmentContext;
 import org.apache.drill.exec.ops.OperatorContext;
 import org.apache.drill.exec.physical.impl.BatchCreator;
@@ -29,7 +30,6 @@ import org.apache.drill.exec.store.dfs.DrillFileSystem;
 import org.apache.drill.exec.store.excel.read.ExcelRecordReader;
 
 import java.io.IOException;
-import java.net.URISyntaxException;
 import java.util.Collections;
 import java.util.List;
 
@@ -39,20 +39,8 @@ import java.util.List;
 @SuppressWarnings("unused")
 public class ExcelScanCreator implements BatchCreator<ExcelSubScan> {
 
-    @Override
-    public CloseableRecordBatch getBatch(FragmentContext context, ExcelSubScan scan, List<RecordBatch> children) throws ExecutionSetupException {
-        assert children == null || children.isEmpty();
-        try {
-            return createBatchScan(context, scan);
-        } catch (URISyntaxException | IOException e) {
-            throw new ExecutionSetupException(e);
-        }
-    }
-
     private CloseableRecordBatch createBatchScan(FragmentContext context, ExcelSubScan scan) throws
-            URISyntaxException,
-            IOException,
-            ExecutionSetupException {
+            IOException {
 
         ExcelStoragePlugin storagePlugin = scan.getStoragePlugin();
         OperatorContext operatorContext = context.newOperatorContext(scan);
@@ -62,8 +50,19 @@ public class ExcelScanCreator implements BatchCreator<ExcelSubScan> {
 
         RecordReader reader = new ExcelRecordReader(dfs, scan.getColumns(), runtimeConfig);
 
-        return new ScanBatch(scan, context, operatorContext, Collections.singletonList(reader), Collections.emptyList());
+        return new ScanBatch(context, operatorContext, Collections.singletonList(reader), Collections.emptyList());
     }
 
 
+    @Override
+    public CloseableRecordBatch getBatch(ExecutorFragmentContext context,
+                                         ExcelSubScan scan,
+                                         List<RecordBatch> children) throws ExecutionSetupException {
+        assert children == null || children.isEmpty();
+        try {
+            return createBatchScan(context, scan);
+        } catch (IOException e) {
+            throw new ExecutionSetupException(e);
+        }
+    }
 }

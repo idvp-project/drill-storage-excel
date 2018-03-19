@@ -15,7 +15,7 @@
     <parent>
         <groupId>org.apache.drill.contrib</groupId>
         <artifactId>drill-contrib-parent</artifactId>
-        <version>1.12.0</version>
+        <version>1.13.0</version>
     </parent>
 
     <artifactId>drill-storage-excel</artifactId>
@@ -92,6 +92,12 @@
 
     <build>
         <plugins>
+            <plugin>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <configuration>
+                    <skipAssembly>true</skipAssembly>
+                </configuration>
+            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
