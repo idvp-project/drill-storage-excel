@@ -25,8 +25,9 @@ import org.apache.drill.exec.store.SchemaConfig;
 import org.apache.drill.exec.store.SchemaFactory;
 import org.apache.drill.exec.store.StoragePlugin;
 
-import java.io.IOException;
 import java.util.Collections;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.ConcurrentSkipListMap;
 
 /**
  * Created by mnasyrov on 11.08.2017.
@@ -42,12 +43,14 @@ public class ExcelSchemaFactory implements SchemaFactory {
     }
 
     @Override
-    public void registerSchemas(SchemaConfig schemaConfig, SchemaPlus parent) throws IOException {
+    public void registerSchemas(SchemaConfig schemaConfig, SchemaPlus parent) {
         ExcelSchema schema = new ExcelSchema(schemaName);
         parent.add(schemaName, schema);
     }
 
     class ExcelSchema extends AbstractSchema {
+
+        private final ConcurrentMap<String, ExcelTable> tables = new ConcurrentSkipListMap<>(String::compareToIgnoreCase);
 
         ExcelSchema(String name) {
             super(Collections.emptyList(), name);
@@ -60,7 +63,7 @@ public class ExcelSchemaFactory implements SchemaFactory {
 
         @Override
         public Table getTable(String name) {
-            return new ExcelTable(plugin, schemaName, new ExcelScanSpec(name));
+            return tables.computeIfAbsent(name, n -> new ExcelTable(plugin, schemaName, new ExcelScanSpec(n)));
         }
     }
 
