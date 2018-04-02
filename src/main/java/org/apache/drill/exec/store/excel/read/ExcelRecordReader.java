@@ -68,6 +68,7 @@ public class ExcelRecordReader extends AbstractRecordReader {
     private final Map<String, Integer> columnNameCounters = new HashMap<>();
 
     private List<NullableVarCharVector> vectors;
+    private File tempFile;
 
     public ExcelRecordReader(DrillFileSystem fileSystem,
                              List<SchemaPath> columns,
@@ -80,8 +81,8 @@ public class ExcelRecordReader extends AbstractRecordReader {
 
     public void setup(final OperatorContext context, final OutputMutator output) throws ExecutionSetupException {
         try {
-            File tempFile = createTempFile();
-            this.wb = readWorkbook(tempFile, config.isEvaluateFormula());
+            this.tempFile = createTempFile();
+            this.wb = readWorkbook(this.tempFile, config.isEvaluateFormula());
             final Sheet sheet = config.getWorksheet() == null ? wb.getSheetAt(0) : wb.getSheet(config.getWorksheet());
 
             CellRange cellRange = new CellRangeBuilder()
@@ -186,6 +187,17 @@ public class ExcelRecordReader extends AbstractRecordReader {
 
     public void close() throws Exception {
         this.wb.close();
+
+        try {
+            if (tempFile != null && tempFile.exists()) {
+                // Пытаемся удалить файл
+                //noinspection ResultOfMethodCallIgnored
+                tempFile.delete();
+            }
+        } catch (Exception e) {
+            logger.warn("Error deleting a temp file: " + tempFile, e);
+        }
+
         if (this.config.isCloseFS()) {
             this.fileSystem.close();
         }
