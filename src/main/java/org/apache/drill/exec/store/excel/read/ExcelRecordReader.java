@@ -17,12 +17,10 @@
  */
 package org.apache.drill.exec.store.excel.read;
 
-import com.google.common.base.CharMatcher;
 import com.google.common.base.Charsets;
 import com.google.common.collect.ImmutableList;
 import com.monitorjbl.xlsx.StreamingReader;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.drill.common.exceptions.ExecutionSetupException;
 import org.apache.drill.common.exceptions.UserException;
@@ -50,7 +48,7 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
-import java.util.*;
+import java.util.List;
 
 /**
  * Created by mnasyrov on 10.08.2017.
@@ -59,7 +57,6 @@ public class ExcelRecordReader extends AbstractRecordReader {
 
     private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(ExcelRecordReader.class);
     private static final int MAX_RECORDS_PER_BATCH = 4096;
-    private static final String DEFAULT_COLUMN_NAME = "column";
 
     private final DrillFileSystem fileSystem;
     private final RuntimeExcelTableConfig config;
