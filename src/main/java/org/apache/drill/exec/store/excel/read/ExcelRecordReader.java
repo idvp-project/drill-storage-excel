@@ -35,6 +35,7 @@ import org.apache.drill.exec.physical.impl.OutputMutator;
 import org.apache.drill.exec.record.MaterializedField;
 import org.apache.drill.exec.store.AbstractRecordReader;
 import org.apache.drill.exec.store.dfs.DrillFileSystem;
+import org.apache.drill.exec.store.easy.text.compliant.HeaderBuilder;
 import org.apache.drill.exec.store.excel.RuntimeExcelTableConfig;
 import org.apache.drill.exec.vector.NullableVarCharVector;
 import org.apache.drill.exec.vector.ValueVector;
@@ -48,9 +49,8 @@ import org.apache.poi.ss.usermodel.WorkbookFactory;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import java.io.*;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.nio.charset.StandardCharsets;
+import java.util.*;
 
 /**
  * Created by mnasyrov on 10.08.2017.
@@ -65,7 +65,6 @@ public class ExcelRecordReader extends AbstractRecordReader {
     private final RuntimeExcelTableConfig config;
     private Workbook wb;
     private CellRangeReader cellRangeReader;
-    private final Map<String, Integer> columnNameCounters = new HashMap<>();
 
     private List<NullableVarCharVector> vectors;
     private File tempFile;
@@ -95,9 +94,9 @@ public class ExcelRecordReader extends AbstractRecordReader {
 
             final String[] headers;
             if (this.config.isExtractHeaders()) {
-                headers = extractHeaders(cellRangeReader.next());
+                headers = prepareHeaders(cellRangeReader.next());
             } else {
-                headers = extractHeaders(new String[Math.abs(cellRange.getColEnd() - cellRange.getColStart()) + 1]);
+                headers = prepareHeaders(new String[Math.abs(cellRange.getColEnd() - cellRange.getColStart()) + 1]);
             }
 
             ImmutableList.Builder<NullableVarCharVector> vectorBuilder = ImmutableList.builder();
@@ -119,41 +118,23 @@ public class ExcelRecordReader extends AbstractRecordReader {
         }
     }
 
-    private String[] extractHeaders(String[] row) {
-        String[] result = ArrayUtils.clone(row);
-
-        for (int i = 0; i < result.length; i++) {
-            result[i] = createColumnName(result[i], i + 1);
+    private String[] prepareHeaders(String[] headers) {
+        HeaderBuilder headerBuilder = new HeaderBuilder();
+        for (int i = 0; i < headers.length; i++) {
+            headerBuilder.startField(i);
+            for (byte b : StringUtils.defaultString(headers[i]).getBytes(StandardCharsets.UTF_8)) {
+                headerBuilder.append(b);
+            }
+            headerBuilder.endField();
         }
 
-        return result;
+        if (!headerBuilder.rowHasData()) {
+            return new String[0];
+        }
+
+        headerBuilder.finishRecord();
+        return headerBuilder.getHeaders();
     }
-
-    private String createColumnName(String name, int column) {
-
-        name = CharMatcher.JAVA_ISO_CONTROL
-                .replaceFrom(StringUtils.defaultString(name), ' ');
-
-        if (StringUtils.isBlank(name)) {
-            name = DEFAULT_COLUMN_NAME;
-        }
-
-        if (!columnNameCounters.containsKey(name)) {
-            columnNameCounters.put(name, 0);
-        }
-
-        Integer nameCounter = columnNameCounters.getOrDefault(name, 0);
-
-        String result;
-        if (DEFAULT_COLUMN_NAME.equals(name))
-            result = String.format("%s%s", name, column);
-        else
-            result = String.format("%s%s", name, nameCounter.equals(0) ? "" : nameCounter);
-
-        columnNameCounters.put(name, ++nameCounter);
-        return result;
-    }
-
 
     public int next() {
         int counter = 0;
