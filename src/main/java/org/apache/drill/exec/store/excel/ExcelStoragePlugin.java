@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -45,7 +45,9 @@ public class ExcelStoragePlugin extends AbstractStoragePlugin {
     private final ExcelStoragePluginConfig config;
     private final Configuration fsConf;
 
-    public ExcelStoragePlugin(ExcelStoragePluginConfig config, DrillbitContext context, String name) throws ExecutionSetupException {
+    public ExcelStoragePlugin(ExcelStoragePluginConfig config, DrillbitContext context, String name) {
+        super(context, name);
+
         this.config = config;
 
         fsConf = new Configuration();
@@ -78,7 +80,7 @@ public class ExcelStoragePlugin extends AbstractStoragePlugin {
     }
 
     @Override
-    public void registerSchemas(SchemaConfig schemaConfig, SchemaPlus parent) throws IOException {
+    public void registerSchemas(SchemaConfig schemaConfig, SchemaPlus parent) {
         schemaFactory.registerSchemas(schemaConfig, parent);
     }
 
