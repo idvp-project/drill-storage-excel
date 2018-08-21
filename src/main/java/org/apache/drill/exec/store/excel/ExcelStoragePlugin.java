@@ -34,6 +34,7 @@ import org.apache.hadoop.fs.FileSystem;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by mnasyrov on 10.08.2017.
@@ -51,12 +52,11 @@ public class ExcelStoragePlugin extends AbstractStoragePlugin {
         this.config = config;
 
         fsConf = new Configuration();
-        if (config.config != null) {
-            for (String s : config.config.keySet()) {
-                fsConf.set(s, config.config.get(s));
-            }
+        for (Map.Entry<String, String> s : config.getConfig().entrySet()) {
+            fsConf.set(s.getKey(), s.getValue());
         }
-        fsConf.set(FileSystem.FS_DEFAULT_NAME_KEY, config.connection);
+
+        fsConf.set(FileSystem.FS_DEFAULT_NAME_KEY, config.getConnection());
         fsConf.set("fs.classpath.impl", ClassPathFileSystem.class.getName());
         fsConf.set("fs.drill-local.impl", LocalSyncableFileSystem.class.getName());
         this.schemaFactory = new ExcelSchemaFactory(name, this);
