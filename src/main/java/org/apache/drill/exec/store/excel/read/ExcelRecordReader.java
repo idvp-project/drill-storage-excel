@@ -40,7 +40,7 @@ import org.apache.drill.exec.vector.ValueVector;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.openxml4j.opc.OPCPackage;
 import org.apache.poi.poifs.filesystem.FileMagic;
-import org.apache.poi.poifs.filesystem.NPOIFSFileSystem;
+import org.apache.poi.poifs.filesystem.POIFSFileSystem;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
@@ -202,7 +202,7 @@ public class ExcelRecordReader extends AbstractRecordReader {
             FileMagic fm = FileMagic.valueOf(is);
             switch (fm) {
                 case OLE2:
-                    NPOIFSFileSystem fs = new NPOIFSFileSystem(is);
+                    POIFSFileSystem fs = new POIFSFileSystem(is);
                     return WorkbookFactory.create(fs);
                 case OOXML:
                     if (evaluateFormula) {
