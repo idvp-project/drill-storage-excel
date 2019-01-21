@@ -17,8 +17,8 @@
  */
 package org.apache.drill.exec.store.excel.read;
 
-import com.google.common.base.Charsets;
-import com.google.common.collect.ImmutableList;
+import org.apache.drill.shaded.guava.com.google.common.base.Charsets;
+import org.apache.drill.shaded.guava.com.google.common.collect.ImmutableList;
 import com.monitorjbl.xlsx.StreamingReader;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;

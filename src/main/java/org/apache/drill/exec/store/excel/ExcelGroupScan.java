@@ -18,7 +18,7 @@
 package org.apache.drill.exec.store.excel;
 
 import com.fasterxml.jackson.annotation.*;
-import com.google.common.base.Preconditions;
+import org.apache.drill.shaded.guava.com.google.common.base.Preconditions;
 import org.apache.drill.common.exceptions.ExecutionSetupException;
 import org.apache.drill.common.expression.SchemaPath;
 import org.apache.drill.exec.physical.PhysicalOperatorSetupException;
@@ -49,7 +49,7 @@ public class ExcelGroupScan extends AbstractGroupScan {
                           @JsonProperty("spec") ExcelScanSpec ExcelScanSpec,
                           @JsonProperty("storagePluginConfig") ExcelStoragePluginConfig storagePluginConfig,
                           @JsonProperty("columns") List<SchemaPath> columns,
-                          @JacksonInject StoragePluginRegistry pluginRegistry) throws IOException, ExecutionSetupException {
+                          @JacksonInject StoragePluginRegistry pluginRegistry) throws ExecutionSetupException {
         this (userName, (ExcelStoragePlugin) pluginRegistry.getPlugin(storagePluginConfig), ExcelScanSpec, columns);
     }
 
@@ -97,12 +97,12 @@ public class ExcelGroupScan extends AbstractGroupScan {
     }
 
     @Override
-    public void applyAssignments(List<CoordinationProtos.DrillbitEndpoint> list) throws PhysicalOperatorSetupException {
+    public void applyAssignments(List<CoordinationProtos.DrillbitEndpoint> list) {
         //Ассаймент к нодам дрила не поддерживается
     }
 
     @Override
-    public SubScan getSpecificScan(int i) throws ExecutionSetupException {
+    public SubScan getSpecificScan(int i) {
         return new ExcelSubScan(getUserName(), spec, storagePlugin, columns);
     }
 
@@ -125,7 +125,7 @@ public class ExcelGroupScan extends AbstractGroupScan {
     }
 
     @Override
-    public PhysicalOperator getNewWithChildren(List<PhysicalOperator> list) throws ExecutionSetupException {
+    public PhysicalOperator getNewWithChildren(List<PhysicalOperator> list) {
         Preconditions.checkArgument(list.isEmpty());
         return new ExcelGroupScan(this);
     }
