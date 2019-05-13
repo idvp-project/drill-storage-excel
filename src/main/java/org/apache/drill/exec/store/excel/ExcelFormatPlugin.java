@@ -21,6 +21,7 @@ import org.apache.drill.common.exceptions.ExecutionSetupException;
 import org.apache.drill.common.expression.SchemaPath;
 import org.apache.drill.common.logical.StoragePluginConfig;
 import org.apache.drill.exec.ops.FragmentContext;
+import org.apache.drill.exec.planner.common.DrillStatsTable;
 import org.apache.drill.exec.proto.UserBitShared;
 import org.apache.drill.exec.server.DrillbitContext;
 import org.apache.drill.exec.store.RecordReader;
@@ -32,6 +33,8 @@ import org.apache.drill.exec.store.dfs.easy.FileWork;
 import org.apache.drill.exec.store.excel.config.ExcelFormatConfig;
 import org.apache.drill.exec.store.excel.read.ExcelRecordReader;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
 
 import java.io.IOException;
 import java.util.List;
@@ -79,5 +82,20 @@ public class ExcelFormatPlugin extends EasyFormatPlugin<ExcelFormatConfig> {
     @Override
     public int getWriterOperatorType() {
         throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public boolean supportsStatistics() {
+        return false;
+    }
+
+    @Override
+    public DrillStatsTable.TableStatistics readStatistics(FileSystem fileSystem, Path path) throws IOException {
+        throw new UnsupportedOperationException("unimplemented");
+    }
+
+    @Override
+    public void writeStatistics(DrillStatsTable.TableStatistics tableStatistics, FileSystem fileSystem, Path path) throws IOException {
+        throw new UnsupportedOperationException("unimplemented");
     }
 }

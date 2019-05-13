@@ -47,8 +47,8 @@ public class RuntimeExcelTableConfig {
         this.closeFS = true;
     }
 
-    RuntimeExcelTableConfig(String filePath, ExcelFormatConfig formatConfig) {
-        this.location = new Path(filePath);
+    RuntimeExcelTableConfig(Path location, ExcelFormatConfig formatConfig) {
+        this.location = location;
         this.extractHeaders = formatConfig.isExtractHeaders();
         this.evaluateFormula = formatConfig.isEvaluateFormula();
         this.worksheet = null;
