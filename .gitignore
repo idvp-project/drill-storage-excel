@@ -1,5 +1,7 @@
 ########### total ###########
 
+.java-version
+
 # idea
 .idea
 *.iml
