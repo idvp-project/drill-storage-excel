@@ -17,10 +17,9 @@
  */
 package org.apache.drill.exec.store.excel.read;
 
-import org.apache.drill.shaded.guava.com.google.common.base.Charsets;
-import org.apache.drill.shaded.guava.com.google.common.collect.ImmutableList;
 import com.monitorjbl.xlsx.StreamingReader;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.drill.common.exceptions.ExecutionSetupException;
 import org.apache.drill.common.exceptions.UserException;
@@ -33,10 +32,13 @@ import org.apache.drill.exec.physical.impl.OutputMutator;
 import org.apache.drill.exec.record.MaterializedField;
 import org.apache.drill.exec.store.AbstractRecordReader;
 import org.apache.drill.exec.store.dfs.DrillFileSystem;
-import org.apache.drill.exec.store.easy.text.compliant.HeaderBuilder;
+import org.apache.drill.exec.store.easy.text.reader.HeaderBuilder;
 import org.apache.drill.exec.store.excel.RuntimeExcelTableConfig;
 import org.apache.drill.exec.vector.NullableVarCharVector;
 import org.apache.drill.exec.vector.ValueVector;
+import org.apache.drill.shaded.guava.com.google.common.base.Charsets;
+import org.apache.drill.shaded.guava.com.google.common.collect.ImmutableList;
+import org.apache.hadoop.fs.Path;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.openxml4j.opc.OPCPackage;
 import org.apache.poi.poifs.filesystem.FileMagic;
@@ -46,7 +48,12 @@ import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 
@@ -91,9 +98,9 @@ public class ExcelRecordReader extends AbstractRecordReader {
 
             final String[] headers;
             if (this.config.isExtractHeaders()) {
-                headers = prepareHeaders(cellRangeReader.next());
+                headers = prepareHeaders(tempFile, cellRangeReader.next());
             } else {
-                headers = prepareHeaders(new String[Math.abs(cellRange.getColEnd() - cellRange.getColStart()) + 1]);
+                headers = prepareHeaders(tempFile, new String[Math.abs(cellRange.getColEnd() - cellRange.getColStart()) + 1]);
             }
 
             ImmutableList.Builder<NullableVarCharVector> vectorBuilder = ImmutableList.builder();
@@ -115,18 +122,21 @@ public class ExcelRecordReader extends AbstractRecordReader {
         }
     }
 
-    private String[] prepareHeaders(String[] headers) {
-        HeaderBuilder headerBuilder = new HeaderBuilder();
+    private String[] prepareHeaders(File file,
+                                    String[] headers) {
+        if (headers == null || headers.length == 0) {
+            return ArrayUtils.EMPTY_STRING_ARRAY;
+        }
+
+        HeaderBuilder headerBuilder = new HeaderBuilder(new Path(file.toURI()));
+        headerBuilder.startRecord();
+
         for (int i = 0; i < headers.length; i++) {
             headerBuilder.startField(i);
             for (byte b : StringUtils.defaultString(headers[i]).getBytes(StandardCharsets.UTF_8)) {
                 headerBuilder.append(b);
             }
             headerBuilder.endField();
-        }
-
-        if (!headerBuilder.rowHasData()) {
-            return new String[0];
         }
 
         headerBuilder.finishRecord();
@@ -154,7 +164,7 @@ public class ExcelRecordReader extends AbstractRecordReader {
             }
 
             for (ValueVector vv : vectors) {
-                vv.getMutator().setValueCount(counter > 0 ? counter : 0);
+                vv.getMutator().setValueCount(Math.max(counter, 0));
             }
 
             return counter;
