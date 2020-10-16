@@ -30,7 +30,7 @@ import org.apache.drill.exec.store.dfs.DrillFileSystem;
 import org.apache.drill.exec.store.dfs.easy.EasyFormatPlugin;
 import org.apache.drill.exec.store.dfs.easy.EasyWriter;
 import org.apache.drill.exec.store.dfs.easy.FileWork;
-import org.apache.drill.exec.store.excel.config.ExcelFormatConfig;
+import org.apache.drill.exec.store.excel.config.iDVPExcelFormatConfig;
 import org.apache.drill.exec.store.excel.read.ExcelRecordReader;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
@@ -40,21 +40,21 @@ import java.io.IOException;
 import java.util.List;
 
 @SuppressWarnings({"WeakerAccess", "unused"})
-public class ExcelFormatPlugin extends EasyFormatPlugin<ExcelFormatConfig> {
+public class iDVPExcelFormatPlugin extends EasyFormatPlugin<iDVPExcelFormatConfig> {
 
     private static final boolean IS_COMPRESSIBLE = false;
     private static final String DEFAULT_NAME = "excel";
-    private final ExcelFormatConfig config;
+    private final iDVPExcelFormatConfig config;
 
-    public ExcelFormatPlugin(DrillbitContext context, Configuration fsConf, StoragePluginConfig storageConfig) {
+    public iDVPExcelFormatPlugin(DrillbitContext context, Configuration fsConf, StoragePluginConfig storageConfig) {
         this(DEFAULT_NAME, context, fsConf, storageConfig);
     }
 
-    public ExcelFormatPlugin(String name, DrillbitContext context, Configuration fsConf, StoragePluginConfig storageConfig) {
-        this(name, context, fsConf, storageConfig, ExcelFormatConfig.DEFAULT);
+    public iDVPExcelFormatPlugin(String name, DrillbitContext context, Configuration fsConf, StoragePluginConfig storageConfig) {
+        this(name, context, fsConf, storageConfig, iDVPExcelFormatConfig.DEFAULT);
     }
 
-    public ExcelFormatPlugin(String name, DrillbitContext context, Configuration fsConf, StoragePluginConfig config, ExcelFormatConfig formatPluginConfig) {
+    public iDVPExcelFormatPlugin(String name, DrillbitContext context, Configuration fsConf, StoragePluginConfig config, iDVPExcelFormatConfig formatPluginConfig) {
         super(name, context, fsConf, config, formatPluginConfig, true, false, false, IS_COMPRESSIBLE, formatPluginConfig.getExtensions(), DEFAULT_NAME);
         this.config = formatPluginConfig;
     }

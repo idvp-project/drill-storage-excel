@@ -32,22 +32,22 @@ import java.util.Objects;
 // На данный момент в idvp data он не используется.
 @JsonTypeName("idvp-excel")
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class ExcelFormatConfig implements FormatPluginConfig {
+public class iDVPExcelFormatConfig implements FormatPluginConfig {
 
-    public static ExcelFormatConfig DEFAULT = new ExcelFormatConfig();
+    public static iDVPExcelFormatConfig DEFAULT = new iDVPExcelFormatConfig();
 
     private final List<String> extensions;
     private final boolean extractHeaders;
     private final boolean evaluateFormula;
 
-    private ExcelFormatConfig() {
+    private iDVPExcelFormatConfig() {
         this(null, null, null);
     }
 
     @JsonCreator
-    private ExcelFormatConfig(@JsonProperty("extensions") List<String> extensions,
-                              @JsonProperty("extractHeaders") Boolean extractHeaders,
-                              @JsonProperty("evaluateFormula") Boolean evaluateFormula) {
+    private iDVPExcelFormatConfig(@JsonProperty("extensions") List<String> extensions,
+                                  @JsonProperty("extractHeaders") Boolean extractHeaders,
+                                  @JsonProperty("evaluateFormula") Boolean evaluateFormula) {
         this.extensions = ListUtils.defaultIfNull(extensions, ImmutableList.of("xls", "xlsx"));
         this.extractHeaders = extractHeaders == null || extractHeaders;
         this.evaluateFormula = evaluateFormula != null && evaluateFormula;
@@ -69,7 +69,7 @@ public class ExcelFormatConfig implements FormatPluginConfig {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        ExcelFormatConfig that = (ExcelFormatConfig) o;
+        iDVPExcelFormatConfig that = (iDVPExcelFormatConfig) o;
         return extractHeaders == that.extractHeaders &&
                 evaluateFormula == that.evaluateFormula &&
                 Objects.equals(extensions, that.extensions);

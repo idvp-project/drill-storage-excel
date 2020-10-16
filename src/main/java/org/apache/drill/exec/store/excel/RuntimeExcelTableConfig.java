@@ -17,7 +17,7 @@
  */
 package org.apache.drill.exec.store.excel;
 
-import org.apache.drill.exec.store.excel.config.ExcelFormatConfig;
+import org.apache.drill.exec.store.excel.config.iDVPExcelFormatConfig;
 import org.apache.drill.exec.store.excel.config.ExcelTableConfig;
 import org.apache.hadoop.fs.Path;
 
@@ -47,7 +47,7 @@ public class RuntimeExcelTableConfig {
         this.closeFS = true;
     }
 
-    RuntimeExcelTableConfig(Path location, ExcelFormatConfig formatConfig) {
+    RuntimeExcelTableConfig(Path location, iDVPExcelFormatConfig formatConfig) {
         this.location = location;
         this.extractHeaders = formatConfig.isExtractHeaders();
         this.evaluateFormula = formatConfig.isEvaluateFormula();
