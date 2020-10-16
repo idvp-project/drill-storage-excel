@@ -28,7 +28,9 @@ import org.apache.drill.common.logical.FormatPluginConfig;
 import java.util.List;
 import java.util.Objects;
 
-@JsonTypeName("excel")
+// В drill появился свой format plugin для excel. Поэтому просто переименовываем наш.
+// На данный момент в idvp data он не используется.
+@JsonTypeName("idvp-excel")
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class ExcelFormatConfig implements FormatPluginConfig {
 
@@ -47,8 +49,8 @@ public class ExcelFormatConfig implements FormatPluginConfig {
                               @JsonProperty("extractHeaders") Boolean extractHeaders,
                               @JsonProperty("evaluateFormula") Boolean evaluateFormula) {
         this.extensions = ListUtils.defaultIfNull(extensions, ImmutableList.of("xls", "xlsx"));
-        this.extractHeaders = extractHeaders == null ? true : extractHeaders;
-        this.evaluateFormula = evaluateFormula == null ? false : evaluateFormula;
+        this.extractHeaders = extractHeaders == null || extractHeaders;
+        this.evaluateFormula = evaluateFormula != null && evaluateFormula;
     }
 
     public List<String> getExtensions() {
