@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -40,15 +40,18 @@ public class ExcelSubScan extends AbstractSubScan {
     private final ExcelStoragePluginConfig storagePluginConfig;
 
     @JsonCreator
-    private ExcelSubScan(@JsonProperty("userName") String userName,
-                        @JsonProperty("spec") ExcelScanSpec excelScanSpec,
-                        @JsonProperty("columns") List<SchemaPath> columns,
-                        @JsonProperty("storagePluginConfig") ExcelStoragePluginConfig storagePluginConfig,
-                        @JacksonInject StoragePluginRegistry pluginRegistry) throws IOException, ExecutionSetupException {
-        this (userName, excelScanSpec, (ExcelStoragePlugin) pluginRegistry.getPlugin(storagePluginConfig), columns);
+    private ExcelSubScan(@JsonProperty("userName") final String userName,
+                         @JsonProperty("spec") final ExcelScanSpec excelScanSpec,
+                         @JsonProperty("columns") final List<SchemaPath> columns,
+                         @JsonProperty("storagePluginConfig") final ExcelStoragePluginConfig storagePluginConfig,
+                         @JacksonInject final StoragePluginRegistry pluginRegistry) {
+        this(userName, excelScanSpec, pluginRegistry.resolve(storagePluginConfig, ExcelStoragePlugin.class), columns);
     }
 
-    ExcelSubScan(String userName, ExcelScanSpec spec, ExcelStoragePlugin storagePlugin, List<SchemaPath> columns) {
+    ExcelSubScan(final String userName,
+                 final ExcelScanSpec spec,
+                 final ExcelStoragePlugin storagePlugin,
+                 final List<SchemaPath> columns) {
         super(userName);
         this.spec = spec;
         this.columns = columns;
@@ -83,7 +86,7 @@ public class ExcelSubScan extends AbstractSubScan {
     }
 
     @Override
-    public PhysicalOperator getNewWithChildren(List<PhysicalOperator> children) throws ExecutionSetupException {
+    public PhysicalOperator getNewWithChildren(final List<PhysicalOperator> children) throws ExecutionSetupException {
         return super.getNewWithChildren(children);
     }
 

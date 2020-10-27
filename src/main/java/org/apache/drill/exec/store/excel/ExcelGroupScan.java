@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -6,9 +6,9 @@
  * to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
- *
+ * <p>
  * http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -45,12 +45,12 @@ public class ExcelGroupScan extends AbstractGroupScan {
     private final ExcelStoragePluginConfig storagePluginConfig;
 
     @JsonCreator
-    private ExcelGroupScan(@JsonProperty("userName") String userName,
-                          @JsonProperty("spec") ExcelScanSpec ExcelScanSpec,
-                          @JsonProperty("storagePluginConfig") ExcelStoragePluginConfig storagePluginConfig,
-                          @JsonProperty("columns") List<SchemaPath> columns,
-                          @JacksonInject StoragePluginRegistry pluginRegistry) throws ExecutionSetupException {
-        this (userName, (ExcelStoragePlugin) pluginRegistry.getPlugin(storagePluginConfig), ExcelScanSpec, columns);
+    private ExcelGroupScan(@JsonProperty("userName") final String userName,
+                           @JsonProperty("spec") final ExcelScanSpec ExcelScanSpec,
+                           @JsonProperty("storagePluginConfig") final ExcelStoragePluginConfig storagePluginConfig,
+                           @JsonProperty("columns") final List<SchemaPath> columns,
+                           @JacksonInject final StoragePluginRegistry pluginRegistry) {
+        this(userName, pluginRegistry.resolve(storagePluginConfig, ExcelStoragePlugin.class), ExcelScanSpec, columns);
     }
 
     @JsonProperty
@@ -73,7 +73,10 @@ public class ExcelGroupScan extends AbstractGroupScan {
         return storagePlugin;
     }
 
-    public ExcelGroupScan(String userName, ExcelStoragePlugin plugin, ExcelScanSpec spec, List<SchemaPath> columns) {
+    public ExcelGroupScan(final String userName,
+                          final ExcelStoragePlugin plugin,
+                          final ExcelScanSpec spec,
+                          final List<SchemaPath> columns) {
         super(userName);
         this.storagePlugin = plugin;
         this.storagePluginConfig = storagePlugin.getConfig();
@@ -125,7 +128,7 @@ public class ExcelGroupScan extends AbstractGroupScan {
     }
 
     @Override
-    public PhysicalOperator getNewWithChildren(List<PhysicalOperator> list) {
+    public PhysicalOperator getNewWithChildren(final List<PhysicalOperator> list) {
         Preconditions.checkArgument(list.isEmpty());
         return new ExcelGroupScan(this);
     }
@@ -136,7 +139,7 @@ public class ExcelGroupScan extends AbstractGroupScan {
     }
 
     @Override
-    public boolean canPushdownProjects(List<SchemaPath> columns) {
+    public boolean canPushdownProjects(final List<SchemaPath> columns) {
         return true;
     }
 

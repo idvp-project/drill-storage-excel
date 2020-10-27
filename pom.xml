@@ -15,10 +15,16 @@
     <parent>
         <groupId>org.apache.drill.contrib</groupId>
         <artifactId>drill-contrib-parent</artifactId>
-        <version>1.17.0</version>
+        <version>1.18.0</version>
     </parent>
 
     <artifactId>drill-storage-excel</artifactId>
+
+    <properties>
+        <org.apache.poi.version>4.1.2</org.apache.poi.version>
+        <com.github.pjfanning.excel-streaming-reader.version>2.3.5</com.github.pjfanning.excel-streaming-reader.version>
+    </properties>
+
 
     <dependencies>
         <dependency>
@@ -36,17 +42,17 @@
         <dependency>
             <groupId>org.apache.poi</groupId>
             <artifactId>poi</artifactId>
-            <version>4.0.1</version>
+            <version>${org.apache.poi.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.poi</groupId>
             <artifactId>poi-ooxml</artifactId>
-            <version>4.0.1</version>
+            <version>${org.apache.poi.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.monitorjbl</groupId>
-            <artifactId>xlsx-streamer</artifactId>
-            <version>2.1.0</version>
+            <groupId>com.github.pjfanning</groupId>
+            <artifactId>excel-streaming-reader</artifactId>
+            <version>${com.github.pjfanning.excel-streaming-reader.version}</version>
         </dependency>
 
     </dependencies>
@@ -55,7 +61,8 @@
         <profile>
             <id>shaded</id>
             <activation>
-                <activeByDefault>true</activeByDefault>
+                <!-- Зависимости уже есть в Apache Drill. -->
+                <activeByDefault>false</activeByDefault>
             </activation>
             <build>
                 <plugins>
