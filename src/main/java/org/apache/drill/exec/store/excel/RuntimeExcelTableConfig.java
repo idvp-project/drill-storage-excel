@@ -42,7 +42,7 @@ public class RuntimeExcelTableConfig {
                             ExcelTableConfig tableConfig) {
         URI connUri = URI.create(storagePluginConfig.getConnection());
         String path = new URIBuilder(connUri)
-                .setPathSegments(connUri.getPath(), tableConfig.getLocation())
+                .setPath(tableConfig.getLocation())
                 .setCustomQuery(connUri.getQuery())
                 .toString();
 
