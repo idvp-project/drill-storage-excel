@@ -20,7 +20,9 @@ package org.apache.drill.exec.store.excel;
 import org.apache.drill.exec.store.excel.config.iDVPExcelFormatConfig;
 import org.apache.drill.exec.store.excel.config.ExcelTableConfig;
 import org.apache.hadoop.fs.Path;
+import org.apache.http.client.utils.URIBuilder;
 
+import java.net.URI;
 import java.util.Objects;
 
 /**
@@ -38,7 +40,13 @@ public class RuntimeExcelTableConfig {
 
     RuntimeExcelTableConfig(ExcelStoragePluginConfig storagePluginConfig,
                             ExcelTableConfig tableConfig) {
-        this.location = new Path(storagePluginConfig.getConnection(), tableConfig.getLocation());
+        URI connUri = URI.create(storagePluginConfig.getConnection());
+        String path = new URIBuilder(connUri)
+                .setPathSegments(connUri.getPath(), tableConfig.getLocation())
+                .setCustomQuery(connUri.getQuery())
+                .toString();
+
+        this.location = new Path(path);
         this.worksheet = tableConfig.getWorksheet();
         this.cellRange = tableConfig.getCellRange();
         this.floatingRangeFooter = tableConfig.isFloatingRangeFooter();
