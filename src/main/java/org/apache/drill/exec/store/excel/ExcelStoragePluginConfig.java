@@ -99,7 +99,7 @@ public class ExcelStoragePluginConfig extends StoragePluginConfigBase {
             throw new IllegalArgumentException("Unknown table name" + table);
         }
 
-        return new RuntimeExcelTableConfig(this, excelTableConfig);
+        return new RuntimeExcelTableConfig(excelTableConfig);
     }
 
 }

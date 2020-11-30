@@ -38,15 +38,8 @@ public class RuntimeExcelTableConfig {
     private final boolean evaluateFormula;
     private final boolean closeFS;
 
-    RuntimeExcelTableConfig(ExcelStoragePluginConfig storagePluginConfig,
-                            ExcelTableConfig tableConfig) {
-        URI connUri = URI.create(storagePluginConfig.getConnection());
-        String path = new URIBuilder(connUri)
-                .setPath(tableConfig.getLocation())
-                .setCustomQuery(connUri.getQuery())
-                .toString();
-
-        this.location = new Path(path);
+    RuntimeExcelTableConfig(ExcelTableConfig tableConfig) {
+        this.location = new Path(tableConfig.getLocation());
         this.worksheet = tableConfig.getWorksheet();
         this.cellRange = tableConfig.getCellRange();
         this.floatingRangeFooter = tableConfig.isFloatingRangeFooter();
