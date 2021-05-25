@@ -17,6 +17,7 @@
  */
 package org.apache.drill.exec.store.excel.read;
 
+import org.apache.drill.common.exceptions.DrillRuntimeException;
 import org.apache.poi.ss.usermodel.*;
 
 import java.util.Iterator;
@@ -112,6 +113,11 @@ public class CellRangeReader implements Iterator<String[]> {
     }
 
     private String getCellValue(Cell cell) {
-        return dataFormatter.formatCellValue(cell, evaluator);
+        try {
+            return dataFormatter.formatCellValue(cell, evaluator);
+        } catch (Exception e) {
+            String message = String.format("Cannot read value in cell %s[%d, %d]", cell.getSheet().getSheetName(), cell.getRowIndex(), cell.getColumnIndex());
+            throw new DrillRuntimeException(message, e);
+        }
     }
 }
